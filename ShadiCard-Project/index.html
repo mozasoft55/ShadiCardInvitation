@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shadi Card</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Pinyon+Script&family=Montserrat:wght@300;500;600&display=swap">
+  <style>
+    :root {
+      --primary: #7A1426;
+      --primary-dark: #4D0A18;
+      --accent: #C9A24A;
+      --paper-top: #FFFAF0;
+      --paper-bottom: #F2E4C4;
+      --text: #3B1A1F;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(180deg, var(--paper-top) 0%, var(--paper-bottom) 100%);
+      color: var(--text);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      min-height: 100vh;
+    }
+    #loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-size: 18px;
+      letter-spacing: 1px;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(201, 162, 74, 0.3);
+      border-top-color: #c9a24a;
+      border-radius: 50%;
+      animation: spin 1s infinite linear;
+      margin-bottom: 12px;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div class="spinner"></div>
+    <div>Loading Invitation...</div>
+  </div>
+
+  <main id="app" style="display: none;"></main>
+
+  <script type="module">
+    // APNA GOOGLE APPS SCRIPT WEB APP URL YAHAN DAALEIN
+    const API_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+
+    async function loadCard() {
+      const params = new URLSearchParams(window.location.search);
+      const slug = params.get('w') || 'tarana-akbar-w0001';
+      const guest = {
+        name: params.get('g') || 'Respected Guest',
+        personCount: params.get('p') || '1',
+        withFamily: params.get('f') === '1'
+      };
+
+      try {
+        const response = await fetch(`${API_URL}?action=wedding&slug=${encodeURIComponent(slug)}`);
+        const data = await response.json();
+
+        if (!data.success) {
+          document.getElementById('loading').innerHTML = `<h3>${data.error || 'Invitation not found'}</h3>`;
+          return;
+        }
+
+        // Apply dynamic theme colors from Sheet
+        if (data.theme) {
+          const root = document.documentElement;
+          if (data.theme.primary) root.style.setProperty('--primary', data.theme.primary);
+          if (data.theme.primary_dark) root.style.setProperty('--primary-dark', data.theme.primary_dark);
+          if (data.theme.accent) root.style.setProperty('--accent', data.theme.accent);
+          if (data.theme.paper_top) root.style.setProperty('--paper-top', data.theme.paper_top);
+          if (data.theme.paper_bottom) root.style.setProperty('--paper-bottom', data.theme.paper_bottom);
+          if (data.theme.text) root.style.setProperty('--text', data.theme.text);
+        }
+
+        // Load specific template dynamically
+        const templateName = data.wedding.template_id || 'template-02';
+        const module = await import(`./templates/${templateName}.js`);
+        
+        const app = document.getElementById('app');
+        app.innerHTML = module.default({ guest, wedding: data.wedding, events: data.events });
+
+        document.getElementById('loading').style.display = 'none';
+        app.style.display = 'block';
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById('loading').innerHTML = `<h3>Failed to load card. Please check internet connection.</h3>`;
+      }
+    }
+
+    loadCard();
+  </script>
+</body>
+</html>
