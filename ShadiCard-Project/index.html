@@ -3,78 +3,90 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Imperial Wedding Invitation</title>
+  <title>Shadi Invitation</title>
   <style>
-    body { margin: 0; background: #160205; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #1a0206; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, serif; }
     #loader {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      font-family: Georgia, serif;
-      color: #ECC880;
+      color: #ecc880;
       letter-spacing: 2px;
+      font-size: 13px;
     }
-    .royal-spinner {
-      width: 50px;
-      height: 50px;
-      border: 2px solid rgba(212, 175, 55, 0.2);
-      border-top-color: #D4AF37;
+    .spin {
+      width: 44px;
+      height: 44px;
+      border: 2px solid rgba(212,175,55,0.25);
+      border-top-color: #d4af37;
       border-radius: 50%;
-      animation: spin 1s infinite linear;
-      margin-bottom: 16px;
+      animation: r 0.8s infinite linear;
+      margin-bottom: 12px;
     }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes r { 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
   <div id="loader">
-    <div class="royal-spinner"></div>
-    <div style="font-size: 13px; text-transform: uppercase;">Opening Royal Suite...</div>
+    <div class="spin"></div>
+    <div>INVITATION LOADING...</div>
   </div>
 
   <main id="app" style="display: none;"></main>
 
   <script type="module">
-    // APNA DEPLOYED GOOGLE APPS SCRIPT URL YAHAN DAALEIN
+    // APNA GOOGLE APPS SCRIPT LINK YAHAN DAALEIN
     const API_URL = "https://script.google.com/macros/s/AKfycbwWI7CL6CND0wZNglUWGUeo8Z7acqDelEGZBn15W07bSSTNhTlsQJ-pBMjDMPCaZYU9/exec";
 
     async function init() {
       const params = new URLSearchParams(window.location.search);
       const slug = params.get('w') || 'tarana-akbar-w0001';
       const guest = {
-        name: params.get('g') || 'Honorable Guest',
+        name: params.get('g') || 'Respected Guest',
         persons: parseInt(params.get('p') || '1', 10),
         with_family: params.get('f') === '1'
       };
 
+      const cacheKey = `wedding_cache_${slug}`;
+      const cached = localStorage.getItem(cacheKey);
+
+      // Fast Render from cache if available
+      if (cached) {
+        try {
+          const cachedData = JSON.parse(cached);
+          await renderCard(cachedData, guest);
+        } catch (e) {}
+      }
+
       try {
         const res = await fetch(`${API_URL}?action=wedding&slug=${encodeURIComponent(slug)}`);
         const data = await res.json();
-
-        if (!data.success) {
-          document.getElementById('loader').innerHTML = `<h3 style="color:#ECC880;">${data.error || 'Invitation not found'}</h3>`;
-          return;
+        if (data.success) {
+          localStorage.setItem(cacheKey, JSON.stringify(data));
+          await renderCard(data, guest);
+        } else if (!cached) {
+          document.getElementById('loader').innerHTML = `<h3>${data.error || 'Record Not Found'}</h3>`;
         }
-
-        const templateId = data.wedding.template_id || 'template-02';
-        const mod = await import(`./templates/${templateId}.js`);
-        
-        const app = document.getElementById('app');
-        app.innerHTML = mod.default({ guest, wedding: data.wedding, events: data.events });
-        
-        document.getElementById('loader').style.display = 'none';
-        app.style.display = 'block';
-
-        if (typeof mod.mount === 'function') {
-          mod.mount(app);
-        }
-
       } catch (err) {
-        console.error(err);
-        document.getElementById('loader').innerHTML = `<h3 style="color:#ECC880;">Unable to connect to Royal Archive.</h3>`;
+        if (!cached) {
+          document.getElementById('loader').innerHTML = `<h3>Check internet connection</h3>`;
+        }
       }
+    }
+
+    async function renderCard(data, guest) {
+      const templateId = data.wedding.template_id || 'template-02';
+      const mod = await import(`./templates/${templateId}.js?v=2`);
+      const app = document.getElementById('app');
+      app.innerHTML = mod.default({ guest, wedding: data.wedding, events: data.events });
+      
+      document.getElementById('loader').style.display = 'none';
+      app.style.display = 'block';
+
+      if (typeof mod.mount === 'function') mod.mount(app);
     }
 
     init();
