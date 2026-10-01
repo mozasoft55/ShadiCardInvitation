@@ -50,9 +50,16 @@ function getSheetData(sheet) {
     let obj = {};
     headers.forEach((h, idx) => {
       let val = row[idx];
-      // Format Dates cleanly instead of raw ISO timestamp
+      // 1899 Time & ISO Date Fix
       if (val instanceof Date) {
-        val = Utilities.formatDate(val, "Asia/Kolkata", "dd MMMM yyyy");
+        const year = val.getFullYear();
+        if (year <= 1900) {
+          // It's a pure time field
+          val = Utilities.formatDate(val, "Asia/Kolkata", "hh:mm a");
+        } else {
+          // Normal Date
+          val = Utilities.formatDate(val, "Asia/Kolkata", "dd MMM yyyy");
+        }
       }
       obj[h] = val;
     });
