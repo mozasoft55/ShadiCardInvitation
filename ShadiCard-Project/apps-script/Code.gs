@@ -1,11 +1,66 @@
-// Google Apps Script backend placeholder.
-// Add Google Sheets / Google Drive integration here.
-
 function doGet(e) {
-  return ContentService
-    .createTextOutput(JSON.stringify({
+  const p = e.parameter || {};
+  const action = p.action || 'wedding';
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  if (action === 'wedding') {
+    const slug = (p.slug || '').trim().toLowerCase();
+    const weddings = getSheetData(ss.getSheetByName('Weddings'));
+    
+    const wedding = weddings.find(w => {
+      const rowSlug = String(w.slug || w.slug_auto || w.slug__auto_ || '').trim().toLowerCase();
+      const rowId = String(w.wedding_id || '').trim().toLowerCase();
+      return rowSlug === slug || rowId === slug;
+    });
+    
+    if (!wedding) {
+      return responseJSON({ success: false, error: 'Wedding record not found' });
+    }
+    
+    const allEvents = getSheetData(ss.getSheetByName('Events'));
+    const events = allEvents.filter(ev => String(ev.wedding_id || '').trim() === String(wedding.wedding_id || '').trim());
+                            
+    const allThemes = getSheetData(ss.getSheetByName('Themes'));
+    const weddingTheme = String(wedding.theme || '').trim().toLowerCase();
+    const theme = allThemes.find(t => String(t.theme || '').trim().toLowerCase() === weddingTheme) || allThemes[0];
+    
+    return responseJSON({
       success: true,
-      message: "ShadiCard API is running"
-    }))
+      wedding: wedding,
+      events: events,
+      theme: theme
+    });
+  }
+
+  return responseJSON({ success: false, error: 'Invalid action' });
+}
+
+function getSheetData(sheet) {
+  if (!sheet) return [];
+  const range = sheet.getDataRange().getValues();
+  if (range.length < 2) return [];
+  
+  const headers = range[0].map(h => 
+    String(h).trim().toLowerCase()
+      .replace(/\s*\(auto\)/g, '')
+      .replace(/[^a-z0-9_]/g, '_')
+  );
+  
+  return range.slice(1).map(row => {
+    let obj = {};
+    headers.forEach((h, idx) => {
+      let val = row[idx];
+      // Format Dates cleanly instead of raw ISO timestamp
+      if (val instanceof Date) {
+        val = Utilities.formatDate(val, "Asia/Kolkata", "dd MMMM yyyy");
+      }
+      obj[h] = val;
+    });
+    return obj;
+  });
+}
+
+function responseJSON(data) {
+  return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
 }
