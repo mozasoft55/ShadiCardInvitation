@@ -2,37 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wedding Invitation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Imperial Wedding Invitation</title>
   <style>
-    body { margin: 0; background: #fdf6e9; }
-    #loading {
+    body { margin: 0; background: #160205; }
+    #loader {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
       font-family: Georgia, serif;
-      color: #7a1426;
-      font-size: 18px;
-      letter-spacing: 1px;
+      color: #ECC880;
+      letter-spacing: 2px;
     }
-    .spin {
-      width: 42px;
-      height: 42px;
-      border: 3px solid rgba(201,162,74,0.3);
-      border-top-color: #c9a24a;
+    .royal-spinner {
+      width: 50px;
+      height: 50px;
+      border: 2px solid rgba(212, 175, 55, 0.2);
+      border-top-color: #D4AF37;
       border-radius: 50%;
-      animation: s 0.9s infinite linear;
-      margin-bottom: 14px;
+      animation: spin 1s infinite linear;
+      margin-bottom: 16px;
     }
-    @keyframes s { 100% { transform: rotate(360deg); } }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <div id="loading">
-    <div class="spin"></div>
-    <div>Loading Royal Invitation...</div>
+  <div id="loader">
+    <div class="royal-spinner"></div>
+    <div style="font-size: 13px; text-transform: uppercase;">Opening Royal Suite...</div>
   </div>
 
   <main id="app" style="display: none;"></main>
@@ -45,7 +44,7 @@
       const params = new URLSearchParams(window.location.search);
       const slug = params.get('w') || 'tarana-akbar-w0001';
       const guest = {
-        name: params.get('g') || 'Guest',
+        name: params.get('g') || 'Honorable Guest',
         persons: parseInt(params.get('p') || '1', 10),
         with_family: params.get('f') === '1'
       };
@@ -55,7 +54,7 @@
         const data = await res.json();
 
         if (!data.success) {
-          document.getElementById('loading').innerHTML = `<h3>${data.error || 'Invitation not found'}</h3>`;
+          document.getElementById('loader').innerHTML = `<h3 style="color:#ECC880;">${data.error || 'Invitation not found'}</h3>`;
           return;
         }
 
@@ -65,19 +64,16 @@
         const app = document.getElementById('app');
         app.innerHTML = mod.default({ guest, wedding: data.wedding, events: data.events });
         
-        document.getElementById('loading').style.display = 'none';
+        document.getElementById('loader').style.display = 'none';
         app.style.display = 'block';
 
-        // Mount click listeners & slider logic
         if (typeof mod.mount === 'function') {
           mod.mount(app);
-        } else if (typeof mod.default.mount === 'function') {
-          mod.default.mount(app);
         }
 
       } catch (err) {
         console.error(err);
-        document.getElementById('loading').innerHTML = `<h3>Failed to load card. Please check internet connection.</h3>`;
+        document.getElementById('loader').innerHTML = `<h3 style="color:#ECC880;">Unable to connect to Royal Archive.</h3>`;
       }
     }
 
