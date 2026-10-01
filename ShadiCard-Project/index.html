@@ -1,95 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Shadi Invitation</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#32030B">
+  <title>Royal Wedding Invitation</title>
+
+  <!-- High-End Typography Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+
   <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; background: #1a0206; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, serif; }
-    #loader {
+    /* Absolute Viewport Lock: Zero Scroll / Zero Bounce */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden !important;
+      position: fixed;
+      touch-action: none;
+      -webkit-touch-callout: none;
+      user-select: none;
+      background-color: #140105;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+    }
+
+    #app-mount {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      position: relative;
+    }
+
+    /* Ambient Engine Loader */
+    #luxury-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: radial-gradient(circle at 50% 30%, #3a040d 0%, #120104 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      color: #ecc880;
-      letter-spacing: 2px;
-      font-size: 13px;
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
     }
-    .spin {
-      width: 44px;
-      height: 44px;
-      border: 2px solid rgba(212,175,55,0.25);
-      border-top-color: #d4af37;
+
+    .loader-ring {
+      width: 58px;
+      height: 58px;
       border-radius: 50%;
-      animation: r 0.8s infinite linear;
-      margin-bottom: 12px;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-top: 2px solid #D4AF37;
+      border-bottom: 2px solid #ECC880;
+      animation: royalSpin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
     }
-    @keyframes r { 100% { transform: rotate(360deg); } }
+
+    .loader-text {
+      margin-top: 18px;
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: #ECC880;
+      text-transform: uppercase;
+    }
+
+    @keyframes royalSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
-  <div id="loader">
-    <div class="spin"></div>
-    <div>INVITATION LOADING...</div>
+
+  <div id="luxury-loader">
+    <div class="loader-ring"></div>
+    <div class="loader-text">Summoning The Royal Suite</div>
   </div>
 
-  <main id="app" style="display: none;"></main>
+  <main id="app-mount"></main>
 
   <script type="module">
-    // APNA GOOGLE APPS SCRIPT LINK YAHAN DAALEIN
-    const API_URL = "https://script.google.com/macros/s/AKfycbwWI7CL6CND0wZNglUWGUeo8Z7acqDelEGZBn15W07bSSTNhTlsQJ-pBMjDMPCaZYU9/exec";
+    // REPLACE WITH YOUR PUBLISHED APPS SCRIPT WEB APP URL:
+    const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbwWI7CL6CND0wZNglUWGUeo8Z7acqDelEGZBn15W07bSSTNhTlsQJ-pBMjDMPCaZYU9/exec";
 
-    async function init() {
-      const params = new URLSearchParams(window.location.search);
-      const slug = params.get('w') || 'tarana-akbar-w0001';
+    async function bootstrap() {
+      const p = new URLSearchParams(window.location.search);
+      const slug = p.get('w') || 'tarana-akbar-w0001';
       const guest = {
-        name: params.get('g') || 'Respected Guest',
-        persons: parseInt(params.get('p') || '1', 10),
-        with_family: params.get('f') === '1'
+        name: p.get('g') || 'Respected Guest',
+        persons: parseInt(p.get('p') || '1', 10),
+        with_family: p.get('f') === '1'
       };
 
-      const cacheKey = `wedding_cache_${slug}`;
-      const cached = localStorage.getItem(cacheKey);
-
-      // Fast Render from cache if available
-      if (cached) {
-        try {
-          const cachedData = JSON.parse(cached);
-          await renderCard(cachedData, guest);
-        } catch (e) {}
-      }
+      const cacheKey = `royal_cache_${slug}`;
+      let weddingPayload = null;
 
       try {
-        const res = await fetch(`${API_URL}?action=wedding&slug=${encodeURIComponent(slug)}`);
-        const data = await res.json();
-        if (data.success) {
-          localStorage.setItem(cacheKey, JSON.stringify(data));
-          await renderCard(data, guest);
-        } else if (!cached) {
-          document.getElementById('loader').innerHTML = `<h3>${data.error || 'Record Not Found'}</h3>`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) weddingPayload = JSON.parse(cached);
+      } catch (e) {}
+
+      // Network request with non-blocking fallback
+      try {
+        const fetchPromise = fetch(`${API_ENDPOINT}?action=wedding&slug=${encodeURIComponent(slug)}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.success) {
+              try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e){}
+              return data;
+            }
+            throw new Error(data.error || 'Record Not Found');
+          });
+
+        if (!weddingPayload) {
+          weddingPayload = await fetchPromise;
+        } else {
+          fetchPromise.catch(() => {}); // background refresh
         }
       } catch (err) {
-        if (!cached) {
-          document.getElementById('loader').innerHTML = `<h3>Check internet connection</h3>`;
+        if (!weddingPayload) {
+          document.getElementById('luxury-loader').innerHTML = `
+            <div style="font-family:'Cinzel',serif; color:#ECC880; text-align:center; padding:20px;">
+              <p style="font-size:14px; letter-spacing:2px;">ROYAL ARCHIVE TEMPORARILY UNREACHABLE</p>
+              <small style="font-family:'Cormorant Garamond'; color:#d4af37;">Please check network connection</small>
+            </div>`;
+          return;
         }
       }
-    }
 
-    async function renderCard(data, guest) {
-      const templateId = data.wedding.template_id || 'template-02';
-      const mod = await import(`./templates/${templateId}.js?v=2`);
-      const app = document.getElementById('app');
-      app.innerHTML = mod.default({ guest, wedding: data.wedding, events: data.events });
+      // Dynamically load template-02
+      const tId = weddingPayload.wedding.template_id || 'template-02';
+      const module = await import(`./templates/${tId}.js?v=200x`);
       
-      document.getElementById('loader').style.display = 'none';
-      app.style.display = 'block';
+      const mount = document.getElementById('app-mount');
+      mount.innerHTML = module.default({
+        guest,
+        wedding: weddingPayload.wedding,
+        events: weddingPayload.events
+      });
 
-      if (typeof mod.mount === 'function') mod.mount(app);
+      if (typeof module.mount === 'function') {
+        module.mount(mount, { guest, wedding: weddingPayload.wedding, events: weddingPayload.events });
+      }
+
+      const loader = document.getElementById('luxury-loader');
+      loader.style.opacity = '0';
+      setTimeout(() => loader.remove(), 600);
     }
 
-    init();
+    window.addEventListener('DOMContentLoaded', bootstrap);
   </script>
 </body>
 </html>
