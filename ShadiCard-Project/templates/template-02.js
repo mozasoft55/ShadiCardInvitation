@@ -1,6 +1,6 @@
 // ============================================================================
-// TEMPLATE-02: ROYAL HERITAGE DIGITAL INVITATION (COMPLETE PRODUCTION SUITE)
-// PURE CODE • 100dvh VIEWPORT • AUDIO AUTO-TRIGGER • ZERO-SCROLL 60 FPS
+// TEMPLATE-02: ROYAL HERITAGE DIGITAL INVITATION (COMPLETE SUITE)
+// AUDIO ONCE • LIVE REAL-TIME COUNTDOWN • PURE SVG/CSS • 100dvh ZERO SCROLL
 // ============================================================================
 
 const esc = (s) =>
@@ -12,7 +12,6 @@ const esc = (s) =>
     "'": '&#39;'
   }[c]));
 
-// Clean and sanitize raw Excel 1899 timestamps into 12-hour AM/PM format
 function formatLuxuryTime(t) {
   if (!t) return '09:30 PM';
   const str = String(t).trim();
@@ -25,7 +24,6 @@ function formatLuxuryTime(t) {
   return str.toUpperCase();
 }
 
-// Clean and sanitize ISO date strings
 function formatLuxuryDate(d) {
   if (!d) return '27 OCTOBER 2026';
   const str = String(d).trim();
@@ -42,10 +40,6 @@ function formatLuxuryDate(d) {
   return str.toUpperCase();
 }
 
-// ============================================================================
-// RENDER FUNCTION
-// ============================================================================
-
 export default function render({ guest, wedding: w, events = [] }) {
   const bride = esc(w.bride_name || 'Tarana');
   const groom = esc(w.groom_name || 'Akbar');
@@ -57,7 +51,6 @@ export default function render({ guest, wedding: w, events = [] }) {
   const initials = `${(bride[0] || 'T')}${(groom[0] || 'A')}`.toUpperCase();
 
   return `
-  <!-- Google Typography Suite -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
@@ -75,7 +68,6 @@ export default function render({ guest, wedding: w, events = [] }) {
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-    /* Root App Viewport */
     .royal-universe {
       position: absolute;
       inset: 0;
@@ -112,7 +104,6 @@ export default function render({ guest, wedding: w, events = [] }) {
       padding: max(6px, env(safe-area-inset-top)) 6px max(8px, env(safe-area-inset-bottom));
     }
 
-    /* Screen Panels (Only 1 Active At A Time) */
     .screen-panel {
       position: absolute;
       inset: max(6px, env(safe-area-inset-top)) 6px max(8px, env(safe-area-inset-bottom));
@@ -140,7 +131,6 @@ export default function render({ guest, wedding: w, events = [] }) {
       z-index: 5;
     }
 
-    /* Carved 3D Scalloped Pearl Border */
     .screen-panel::before {
       content: "";
       position: absolute;
@@ -153,6 +143,7 @@ export default function render({ guest, wedding: w, events = [] }) {
         0 0 0 2px #fff6e0;
       pointer-events: none;
     }
+
     .screen-panel::after {
       content: "";
       position: absolute;
@@ -199,7 +190,7 @@ export default function render({ guest, wedding: w, events = [] }) {
     .audio-knob.spinning svg { animation: spinKnob 5s linear infinite; }
     @keyframes spinKnob { 100% { transform: rotate(360deg); } }
 
-    /* Tactical CTA Button */
+    /* Button */
     .palace-btn {
       width: 100%;
       max-width: 270px;
@@ -244,13 +235,8 @@ export default function render({ guest, wedding: w, events = [] }) {
       background: var(--gold-24k);
     }
 
-    /* Screen Elements */
-    .crest-ornament-wrap {
-      width: 150px;
-      height: 54px;
-      margin: 0 auto;
-    }
-
+    /* Typography & Layout Elements */
+    .crest-ornament-wrap { width: 150px; height: 54px; margin: 0 auto; }
     .main-invitation-title {
       font-family: 'Cinzel', serif;
       font-size: 15px;
@@ -260,12 +246,7 @@ export default function render({ guest, wedding: w, events = [] }) {
       text-transform: uppercase;
       margin: 2px 0 0;
     }
-
-    .floret-bar-center {
-      width: 180px;
-      height: 12px;
-      margin: 2px auto 4px;
-    }
+    .floret-bar-center { width: 180px; height: 12px; margin: 2px auto 4px; }
 
     .save-the-date-deck {
       display: flex;
@@ -365,14 +346,8 @@ export default function render({ guest, wedding: w, events = [] }) {
       margin: 8px auto;
       width: 92%;
     }
-    .vine-branch-svg {
-      width: 26px;
-      height: 26px;
-      flex-shrink: 0;
-    }
-    .person-box-unit, .family-box-unit {
-      text-align: center;
-    }
+    .vine-branch-svg { width: 26px; height: 26px; flex-shrink: 0; }
+    .person-box-unit, .family-box-unit { text-align: center; }
     .box-header-script {
       font-family: 'Great Vibes', cursive;
       font-size: 21px;
@@ -428,11 +403,7 @@ export default function render({ guest, wedding: w, events = [] }) {
       margin: 2px 0;
       letter-spacing: 0.3px;
     }
-    .floret-tail-divider {
-      width: 160px;
-      height: 14px;
-      margin: 4px auto 0;
-    }
+    .floret-tail-divider { width: 160px; height: 14px; margin: 4px auto 0; }
 
     .event-leaf-stack {
       width: 100%;
@@ -453,18 +424,55 @@ export default function render({ guest, wedding: w, events = [] }) {
       text-align: left;
     }
 
+    /* ========================================================
+       LIVE REAL-TIME COUNTDOWN TIMER (LAST SCREEN)
+       ======================================================== */
+    .countdown-gold-deck {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 6px 0;
+      width: 100%;
+      max-width: 310px;
+    }
+    .count-pod {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid var(--gold-24k);
+      border-radius: 8px;
+      padding: 6px 2px;
+      box-shadow: 0 4px 10px rgba(111, 15, 28, 0.08);
+      text-align: center;
+    }
+    .count-digits {
+      font-family: 'Cinzel', serif;
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--oxblood);
+      line-height: 1;
+    }
+    .count-tag {
+      font-family: 'Cinzel', serif;
+      font-size: 7.5px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #8b6818;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
     .closing-buttons-list {
       width: 100%;
       max-width: 290px;
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 6px;
     }
     .pill-action {
-      padding: 9px 16px;
+      padding: 8px 14px;
       border-radius: 30px;
       font-family: 'Cinzel', serif;
-      font-size: 9.5px;
+      font-size: 9px;
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
@@ -505,7 +513,7 @@ export default function render({ guest, wedding: w, events = [] }) {
     }
   </style>
 
-  <!-- Reusable Shared SVG Flourishes -->
+  <!-- Reusable SVG Flourishes -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
       <g id="vineBranch">
@@ -532,10 +540,10 @@ export default function render({ guest, wedding: w, events = [] }) {
 
   <div class="royal-universe">
     
-    <!-- Audio Element (invitation.mp3 fallback) -->
+    <!-- Audio Element (Bina Loop ke) -->
     <button class="audio-knob" id="audioToggle" aria-label="Toggle Music" type="button">
       <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-      <audio id="royalAudio" loop preload="auto">
+      <audio id="royalAudio" preload="auto">
         <source src="${esc(w.music_url || 'invitation.mp3')}" type="audio/mp3">
       </audio>
     </button>
@@ -776,7 +784,7 @@ export default function render({ guest, wedding: w, events = [] }) {
       </section>
 
       <!-- ========================================================
-           SCREEN 4: CLOSING & 1-TAP CONCIERGE
+           SCREEN 4: CLOSING & COUNTDOWN TIMER & CONCIERGE
            ======================================================== -->
       <section class="screen-panel" data-index="4" aria-label="Closing">
         <div class="stepper-dots">
@@ -785,18 +793,44 @@ export default function render({ guest, wedding: w, events = [] }) {
         </div>
 
         <div>
-          <svg class="crest-ornament-wrap" viewBox="0 0 160 56" style="height:44px;">
+          <svg class="crest-ornament-wrap" viewBox="0 0 160 56" style="height:40px;">
             <circle cx="80" cy="28" r="22" fill="none" stroke="#6f0f1c" stroke-width="1.3"/>
             <text x="80" y="36" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="20" font-weight="700" fill="#6f0f1c">${initials}</text>
           </svg>
-          <div style="font-family:'Great Vibes',cursive; font-size:44px; color:var(--oxblood); line-height:1.05; margin:4px 0;">
-            With Love<br>&amp; Warmest Regards
+          <div style="font-family:'Great Vibes',cursive; font-size:38px; color:var(--oxblood); line-height:1; margin:2px 0;">
+            With Love &amp; Warmest Regards
           </div>
-          <div style="font-size:18px; font-weight:700; color:var(--oxblood); margin-top:2px;">
+          <div style="font-size:16px; font-weight:700; color:var(--oxblood);">
             ${esc(w.footer_text || 'Md Kalim Khan & Family')}
           </div>
         </div>
 
+        <!-- DYNAMIC REAL-TIME COUNTDOWN TIMER -->
+        <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+          <div style="font-family:'Cinzel',serif; font-size:8.5px; letter-spacing:2px; text-transform:uppercase; color:#8b6818; font-weight:700; margin-bottom:4px;">
+            ✦ The Auspicious Moment Arrives In ✦
+          </div>
+          <div class="countdown-gold-deck" id="weddingCountdown" data-target="${esc(w.date || '2026-10-27T21:30:00')}">
+            <div class="count-pod">
+              <div class="count-digits" id="cdDays">00</div>
+              <div class="count-tag">Days</div>
+            </div>
+            <div class="count-pod">
+              <div class="count-digits" id="cdHours">00</div>
+              <div class="count-tag">Hours</div>
+            </div>
+            <div class="count-pod">
+              <div class="count-digits" id="cdMins">00</div>
+              <div class="count-tag">Mins</div>
+            </div>
+            <div class="count-pod">
+              <div class="count-digits" id="cdSecs">00</div>
+              <div class="count-tag">Secs</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Luxury Action Concierge -->
         <div class="closing-buttons-list">
           ${w.map_url ? `
             <a href="${esc(w.map_url)}" target="_blank" rel="noopener noreferrer" class="pill-action pill-gold">
@@ -817,7 +851,7 @@ export default function render({ guest, wedding: w, events = [] }) {
           </button>
         </div>
 
-        <button class="palace-btn" type="button" data-next="0" style="min-height:36px; max-width:180px; font-size:9px;">
+        <button class="palace-btn" type="button" data-next="0" style="min-height:34px; max-width:180px; font-size:9px;">
           <span>Return To Opening</span>
         </button>
       </section>
@@ -849,7 +883,7 @@ export default function render({ guest, wedding: w, events = [] }) {
 }
 
 // ============================================================================
-// MOUNT FUNCTION (STATE MACHINE & INTERACTIONS)
+// MOUNT FUNCTION (LIFECYCLE, COUNTDOWN & AUTO-PLAY ONCE CONTROLLER)
 // ============================================================================
 
 export function mount(root, { guest, wedding: w }) {
@@ -858,7 +892,7 @@ export function mount(root, { guest, wedding: w }) {
   const audio = root.querySelector('#royalAudio');
 
   let activeIndex = 0;
-  let audioInitiated = false;
+  let audioInitiated = false; // Audio sirf EK baar trigger hoga
 
   function switchScreen(targetIndex) {
     if (targetIndex === activeIndex || targetIndex < 0 || targetIndex >= screens.length) return;
@@ -876,27 +910,35 @@ export function mount(root, { guest, wedding: w }) {
     }, 400);
   }
 
-  // Unified Button Handler (Navigation + Tap-To-Play Audio Trigger)
+  // 1. Navigation Button Handler (Audio First Click par Play hoga, Baad me Repeat NAHI hoga)
   root.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-next]');
     if (btn) {
       const target = parseInt(btn.getAttribute('data-next'), 10);
       switchScreen(target);
 
-      // User gesture triggers audio playback per modern browser requirements
       if (audio && !audioInitiated) {
         audioInitiated = true;
         audio.currentTime = 0;
         audio.play().then(() => {
           if (audioBtn) audioBtn.classList.add('spinning');
         }).catch((err) => {
-          console.log("Audio auto-play policy notification:", err);
+          console.log("Audio notice:", err);
         });
       }
     }
   });
 
-  // Audio Toggle Switch
+  // 2. Audio Khatam hone par Spinning Icon band hoga (No Loop)
+  if (audio) {
+    audio.addEventListener('ended', () => {
+      if (audioBtn) {
+        audioBtn.classList.remove('spinning');
+      }
+    });
+  }
+
+  // 3. Audio Manual Play / Pause
   if (audioBtn && audio) {
     audioBtn.onclick = () => {
       if (audio.paused) {
@@ -908,18 +950,65 @@ export function mount(root, { guest, wedding: w }) {
     };
   }
 
-  // Dynamic Google Calendar Generator (27th Oct 2026)
+  // 4. AUTOMATIC LIVE COUNTDOWN TIMER (LAST SCREEN)
+  const cdElement = root.querySelector('#weddingCountdown');
+  if (cdElement) {
+    // 27th October 2026, 9:30 PM Target Date
+    const targetDate = new Date("2026-10-27T21:30:00+05:30").getTime();
+
+    const elDays = root.querySelector('#cdDays');
+    const elHours = root.querySelector('#cdHours');
+    const elMins = root.querySelector('#cdMins');
+    const elSecs = root.querySelector('#cdSecs');
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance <= 0) {
+        elDays.textContent = "00";
+        elHours.textContent = "00";
+        elMins.textContent = "00";
+        elSecs.textContent = "00";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      elDays.textContent = String(days).padStart(2, '0');
+      elHours.textContent = String(hours).padStart(2, '0');
+      elMins.textContent = String(minutes).padStart(2, '0');
+      elSecs.textContent = String(seconds).padStart(2, '0');
+    }
+
+    updateCountdown();
+    const timerInterval = setInterval(updateCountdown, 1000);
+
+    // Memory clean on disconnect
+    const obs = new MutationObserver(() => {
+      if (!document.body.contains(root)) {
+        clearInterval(timerInterval);
+        obs.disconnect();
+      }
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+  }
+
+  // 5. Google Calendar Link
   const calBtn = root.querySelector('#saveCalBtn');
   if (calBtn) {
     const calTitle = encodeURIComponent(`Wedding: ${w.bride_name || 'Tarana'} & ${w.groom_name || 'Akbar'}`);
     const calDesc = encodeURIComponent(`You are cordially invited to celebrate the marriage of ${w.bride_name || 'Tarana'} & ${w.groom_name || 'Akbar'}. Venue: ${w.venue || ''}, ${w.address || ''}`);
     const calLoc = encodeURIComponent(`${w.venue || ''}, ${w.address || ''}`);
-    const startUTC = "20261027T143000Z";
+    const startUTC = "20261027T160000Z";
     const endUTC = "20261027T183000Z";
     calBtn.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${calTitle}&dates=${startUTC}/${endUTC}&details=${calDesc}&location=${calLoc}`;
   }
 
-  // Dynamic WhatsApp VIP Concierge
+  // 6. WhatsApp RSVP Link
   const rsvpBtn = root.querySelector('#waRsvpBtn');
   if (rsvpBtn) {
     const rsvpPhone = esc(w.rsvp_number || '919330981386');
@@ -927,7 +1016,7 @@ export function mount(root, { guest, wedding: w }) {
     rsvpBtn.href = `https://wa.me/${rsvpPhone}?text=${msg}`;
   }
 
-  // Canvas Scratch Card Handlers
+  // 7. Scratch Card Trigger
   const modal = root.querySelector('#scratchModal');
   const openScratch = root.querySelector('#triggerScratch');
   const closeScratch = root.querySelector('#closeScratch');
@@ -942,7 +1031,6 @@ export function mount(root, { guest, wedding: w }) {
   }
 }
 
-// Pure Canvas 2D Gold Metallic Foil Scratching Engine
 function initScratch(canvas) {
   if (canvas._init) return;
   canvas._init = true;
