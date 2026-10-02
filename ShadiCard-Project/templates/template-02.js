@@ -1,6 +1,6 @@
 // ============================================================================
-// TEMPLATE-02: ROYAL HERITAGE DIGITAL INVITATION (COMPLETE SUITE)
-// AUDIO ONCE • LIVE REAL-TIME COUNTDOWN • PURE SVG/CSS • 100dvh ZERO SCROLL
+// TEMPLATE-02: ROYAL HERITAGE DIGITAL INVITATION (COMPLETE PRODUCTION SUITE)
+// AUDIO ONCE • LIVE REAL-TIME COUNTDOWN • DYNAMIC THEMES • 100dvh ZERO SCROLL
 // ============================================================================
 
 const esc = (s) =>
@@ -24,6 +24,58 @@ function formatLuxuryTime(t) {
   return str.toUpperCase();
 }
 
+/**
+ * Combines wedding.date ("yyyy-MM-dd" or ISO format) and wedding.time ("9:30 PM")
+ * into a valid IST (+05:30) timestamp.
+ */
+function parseWeddingDateTime(dateStr, timeStr) {
+  const FALLBACK = new Date('2026-10-27T21:30:00+05:30').getTime();
+  if (!dateStr) return FALLBACK;
+
+  const dateMatch = String(dateStr).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!dateMatch) return FALLBACK;
+  const [, yyyy, mm, dd] = dateMatch;
+
+  let hh = 21, min = 30; // 09:30 PM default
+  const timeMatch = String(timeStr || '').trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
+  if (timeMatch) {
+    let h = parseInt(timeMatch[1], 10);
+    const m = parseInt(timeMatch[2], 10);
+    const ap = (timeMatch[3] || '').toUpperCase();
+    if (ap === 'PM' && h !== 12) h += 12;
+    if (ap === 'AM' && h === 12) h = 0;
+    hh = h; min = m;
+  }
+
+  const iso = `${yyyy}-${mm}-${dd}T${String(hh).padStart(2, '0')}:${String(min).padStart(2, '0')}:00+05:30`;
+  const ts = new Date(iso).getTime();
+  return isNaN(ts) ? FALLBACK : ts;
+}
+
+function ordinalSuffix(n) {
+  const j = n % 10, k = n % 100;
+  if (j === 1 && k !== 11) return 'st';
+  if (j === 2 && k !== 12) return 'nd';
+  if (j === 3 && k !== 13) return 'rd';
+  return 'th';
+}
+
+function buildSaveTheDate(dateStr) {
+  const FALLBACK = { weekday: 'TUESDAY', day: '27', suffix: 'th', month: 'OCTOBER', year: '2026' };
+  const m = String(dateStr || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return FALLBACK;
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  if (isNaN(d.getTime())) return FALLBACK;
+  const day = d.getUTCDate();
+  return {
+    weekday: d.toLocaleDateString('en-IN', { weekday: 'long', timeZone: 'UTC' }).toUpperCase(),
+    day: String(day),
+    suffix: ordinalSuffix(day),
+    month: d.toLocaleDateString('en-IN', { month: 'long', timeZone: 'UTC' }).toUpperCase(),
+    year: String(d.getUTCFullYear())
+  };
+}
+
 function formatLuxuryDate(d) {
   if (!d) return '27 OCTOBER 2026';
   const str = String(d).trim();
@@ -40,6 +92,10 @@ function formatLuxuryDate(d) {
   return str.toUpperCase();
 }
 
+// ============================================================================
+// RENDER FUNCTION
+// ============================================================================
+
 export default function render({ guest, wedding: w, events = [] }) {
   const bride = esc(w.bride_name || 'Tarana');
   const groom = esc(w.groom_name || 'Akbar');
@@ -50,6 +106,28 @@ export default function render({ guest, wedding: w, events = [] }) {
   const isFamily = guest?.with_family ? '✓' : '—';
   const initials = `${(bride[0] || 'T')}${(groom[0] || 'A')}`.toUpperCase();
 
+  // Theme Colors from Themes Sheet with fallback
+  const theme = w.theme_colors || {
+    primary: '#6f0f1c',
+    primary_dark: '#460611',
+    accent: '#b98a2f',
+    paper_top: '#FFFDF8',
+    paper_bottom: '#F2DFBF',
+    text: '#3b1a1f'
+  };
+
+  const ceremonyTitle = esc(w.ceremony_title || 'Marriage Ceremony');
+  const venueTitle = esc(w.venue_title || 'Banquet Venue');
+
+  const hasCustomMessage = !!(w.message && String(w.message).trim());
+  const welcomeMessageHtml = hasCustomMessage
+    ? esc(w.message)
+    : `With immense joy, we invite you to celebrate the wedding union of
+       <span style="font-family:'Great Vibes',cursive; font-size:32px; color:var(--oxblood); display:inline-block; margin-top:2px;">${bride} &amp; ${groom}</span>.`;
+
+  const audioSrc = esc(w.music_url || 'invitation.mp3');
+  const saveDate = buildSaveTheDate(w.date);
+
   return `
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,13 +135,16 @@ export default function render({ guest, wedding: w, events = [] }) {
 
   <style>
     :root {
-      --oxblood: #6f0f1c;
-      --oxblood-deep: #460611;
-      --gold-24k: #b98a2f;
+      --oxblood: ${esc(theme.primary)};
+      --oxblood-deep: ${esc(theme.primary_dark)};
+      --gold-24k: ${esc(theme.accent)};
       --gold-light: #f4d896;
       --gold-line: rgba(185, 138, 47, 0.45);
       --parchment-base: #fdf8ed;
       --parchment-shade: #f4e4c5;
+      --paper-top: ${esc(theme.paper_top)};
+      --paper-bottom: ${esc(theme.paper_bottom)};
+      --ink-text: ${esc(theme.text)};
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -77,7 +158,7 @@ export default function render({ guest, wedding: w, events = [] }) {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 20%, #36050e 0%, #160105 60%, #0a0002 100%);
+      background: radial-gradient(circle at 50% 20%, var(--oxblood-deep) 0%, #160105 60%, #0a0002 100%);
     }
 
     .royal-universe::before {
@@ -108,7 +189,7 @@ export default function render({ guest, wedding: w, events = [] }) {
       position: absolute;
       inset: max(6px, env(safe-area-inset-top)) 6px max(8px, env(safe-area-inset-bottom));
       border-radius: min(44vw, 190px) min(44vw, 190px) 24px 24px;
-      background: linear-gradient(180deg, #FFFDF8 0%, #FAF2DF 48%, #F2DFBF 100%);
+      background: linear-gradient(180deg, var(--paper-top) 0%, var(--paper-top) 48%, var(--paper-bottom) 100%);
       box-shadow: 
         0 20px 60px rgba(0, 0, 0, 0.8),
         0 0 35px rgba(185, 138, 47, 0.2),
@@ -260,7 +341,7 @@ export default function render({ guest, wedding: w, events = [] }) {
       font-size: 9.5px;
       font-weight: 700;
       letter-spacing: 1px;
-      color: #3b1a1f;
+      color: var(--ink-text);
       line-height: 1.25;
     }
     .vertical-sep-gold {
@@ -392,14 +473,14 @@ export default function render({ guest, wedding: w, events = [] }) {
     .host-address-text {
       font-size: 11.5px;
       font-style: italic;
-      color: #3b1a1f;
+      color: var(--ink-text);
       line-height: 1.35;
       margin: 2px 0;
     }
     .host-contact-text {
       font-size: 11px;
       font-weight: 700;
-      color: #3b1a1f;
+      color: var(--ink-text);
       margin: 2px 0;
       letter-spacing: 0.3px;
     }
@@ -424,9 +505,7 @@ export default function render({ guest, wedding: w, events = [] }) {
       text-align: left;
     }
 
-    /* ========================================================
-       LIVE REAL-TIME COUNTDOWN TIMER (LAST SCREEN)
-       ======================================================== */
+    /* Live Real-Time Countdown Deck */
     .countdown-gold-deck {
       display: flex;
       justify-content: center;
@@ -517,34 +596,34 @@ export default function render({ guest, wedding: w, events = [] }) {
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
       <g id="vineBranch">
-        <path d="M12,24 C10,16 6,12 0,8 C8,10 14,7 18,0 C17,8 21,12 28,14 C20,15 15,19 12,24 Z" fill="#6f0f1c"/>
-        <circle cx="2" cy="6" r="1.5" fill="#6f0f1c"/>
-        <circle cx="20" cy="2" r="1.5" fill="#6f0f1c"/>
-        <circle cx="26" cy="16" r="1.5" fill="#6f0f1c"/>
+        <path d="M12,24 C10,16 6,12 0,8 C8,10 14,7 18,0 C17,8 21,12 28,14 C20,15 15,19 12,24 Z" fill="var(--oxblood)"/>
+        <circle cx="2" cy="6" r="1.5" fill="var(--oxblood)"/>
+        <circle cx="20" cy="2" r="1.5" fill="var(--oxblood)"/>
+        <circle cx="26" cy="16" r="1.5" fill="var(--oxblood)"/>
       </g>
       <g id="flourishTail">
-        <line x1="10" y1="8" x2="68" y2="8" stroke="#6f0f1c" stroke-width="1.2"/>
-        <line x1="92" y1="8" x2="150" y2="8" stroke="#6f0f1c" stroke-width="1.2"/>
-        <circle cx="80" cy="8" r="3" fill="#6f0f1c"/>
-        <circle cx="80" cy="3" r="1.6" fill="#6f0f1c"/>
-        <circle cx="80" cy="13" r="1.6" fill="#6f0f1c"/>
-        <circle cx="75" cy="8" r="1.6" fill="#6f0f1c"/>
-        <circle cx="85" cy="8" r="1.6" fill="#6f0f1c"/>
-        <circle cx="76.5" cy="4.5" r="1.4" fill="#6f0f1c"/>
-        <circle cx="83.5" cy="4.5" r="1.4" fill="#6f0f1c"/>
-        <circle cx="76.5" cy="11.5" r="1.4" fill="#6f0f1c"/>
-        <circle cx="83.5" cy="11.5" r="1.4" fill="#6f0f1c"/>
+        <line x1="10" y1="8" x2="68" y2="8" stroke="var(--oxblood)" stroke-width="1.2"/>
+        <line x1="92" y1="8" x2="150" y2="8" stroke="var(--oxblood)" stroke-width="1.2"/>
+        <circle cx="80" cy="8" r="3" fill="var(--oxblood)"/>
+        <circle cx="80" cy="3" r="1.6" fill="var(--oxblood)"/>
+        <circle cx="80" cy="13" r="1.6" fill="var(--oxblood)"/>
+        <circle cx="75" cy="8" r="1.6" fill="var(--oxblood)"/>
+        <circle cx="85" cy="8" r="1.6" fill="var(--oxblood)"/>
+        <circle cx="76.5" cy="4.5" r="1.4" fill="var(--oxblood)"/>
+        <circle cx="83.5" cy="4.5" r="1.4" fill="var(--oxblood)"/>
+        <circle cx="76.5" cy="11.5" r="1.4" fill="var(--oxblood)"/>
+        <circle cx="83.5" cy="11.5" r="1.4" fill="var(--oxblood)"/>
       </g>
     </defs>
   </svg>
 
   <div class="royal-universe">
     
-    <!-- Audio Element (Bina Loop ke) -->
+    <!-- Audio Element (Play Once, No Loop) -->
     <button class="audio-knob" id="audioToggle" aria-label="Toggle Music" type="button">
       <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
       <audio id="royalAudio" preload="auto">
-        <source src="${esc(w.music_url || 'invitation.mp3')}" type="audio/mp3">
+        <source src="${audioSrc}" type="audio/mp3">
       </audio>
     </button>
 
@@ -561,12 +640,12 @@ export default function render({ guest, wedding: w, events = [] }) {
 
         <div>
           <svg class="crest-ornament-wrap" viewBox="0 0 160 56">
-            <path d="M42,28 C28,18 16,24 4,32 C18,34 30,32 40,28 Z" fill="#6f0f1c" opacity=".85"/>
-            <path d="M118,28 C132,18 144,24 156,32 C142,34 130,32 120,28 Z" fill="#6f0f1c" opacity=".85"/>
-            <circle cx="80" cy="28" r="22" fill="none" stroke="#6f0f1c" stroke-width="1.4"/>
-            <circle cx="80" cy="28" r="19" fill="none" stroke="#b98a2f" stroke-width=".8"/>
-            <text x="80" y="36" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="21" font-weight="700" fill="#6f0f1c">${initials}</text>
-            <circle cx="80" cy="4" r="2" fill="#b98a2f"/>
+            <path d="M42,28 C28,18 16,24 4,32 C18,34 30,32 40,28 Z" fill="var(--oxblood)" opacity=".85"/>
+            <path d="M118,28 C132,18 144,24 156,32 C142,34 130,32 120,28 Z" fill="var(--oxblood)" opacity=".85"/>
+            <circle cx="80" cy="28" r="22" fill="none" stroke="var(--oxblood)" stroke-width="1.4"/>
+            <circle cx="80" cy="28" r="19" fill="none" stroke="var(--gold-24k)" stroke-width=".8"/>
+            <text x="80" y="36" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="21" font-weight="700" fill="var(--oxblood)">${initials}</text>
+            <circle cx="80" cy="4" r="2" fill="var(--gold-24k)"/>
           </svg>
           <div style="font-family:'Cinzel',serif; font-size:9.5px; letter-spacing:2px; color:var(--oxblood); font-weight:700;">Imperial Matrimony</div>
         </div>
@@ -579,9 +658,8 @@ export default function render({ guest, wedding: w, events = [] }) {
             Dear <strong>${guestName}</strong>
           </div>
 
-          <p style="font-style:italic; font-size:15px; line-height:1.45; color:#3b1a1f; max-width:88%; margin:6px auto 0;">
-            With immense joy, we invite you to celebrate the wedding union of
-            <span style="font-family:'Great Vibes',cursive; font-size:32px; color:var(--oxblood); display:inline-block; margin-top:2px;">${bride} &amp; ${groom}</span>.
+          <p style="font-style:italic; font-size:15px; line-height:1.45; color:var(--ink-text); max-width:88%; margin:6px auto 0;">
+            ${welcomeMessageHtml}
           </p>
         </div>
 
@@ -602,23 +680,23 @@ export default function render({ guest, wedding: w, events = [] }) {
 
         <div>
           <svg class="crest-ornament-wrap" viewBox="0 0 160 56">
-            <path d="M42,28 C28,18 16,24 4,32 C18,34 30,32 40,28 Z" fill="#6f0f1c" opacity=".85"/>
-            <path d="M118,28 C132,18 144,24 156,32 C142,34 130,32 120,28 Z" fill="#6f0f1c" opacity=".85"/>
-            <circle cx="80" cy="28" r="22" fill="none" stroke="#6f0f1c" stroke-width="1.4"/>
-            <circle cx="80" cy="28" r="19" fill="none" stroke="#b98a2f" stroke-width=".8"/>
-            <text x="80" y="36" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="21" font-weight="700" fill="#6f0f1c">${initials}</text>
-            <circle cx="80" cy="52" r="2" fill="#6f0f1c"/>
+            <path d="M42,28 C28,18 16,24 4,32 C18,34 30,32 40,28 Z" fill="var(--oxblood)" opacity=".85"/>
+            <path d="M118,28 C132,18 144,24 156,32 C142,34 130,32 120,28 Z" fill="var(--oxblood)" opacity=".85"/>
+            <circle cx="80" cy="28" r="22" fill="none" stroke="var(--oxblood)" stroke-width="1.4"/>
+            <circle cx="80" cy="28" r="19" fill="none" stroke="var(--gold-24k)" stroke-width=".8"/>
+            <text x="80" y="36" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="21" font-weight="700" fill="var(--oxblood)">${initials}</text>
+            <circle cx="80" cy="52" r="2" fill="var(--oxblood)"/>
           </svg>
 
           <h2 class="main-invitation-title">Wedding Invitation</h2>
           <svg class="floret-bar-center" viewBox="0 0 160 14"><use href="#flourishTail"/></svg>
 
           <div class="save-the-date-deck">
-            <div class="date-label-cell" style="text-align:right;">SAVE THE DATE<br>TUESDAY</div>
+            <div class="date-label-cell" style="text-align:right;">SAVE THE DATE<br>${saveDate.weekday}</div>
             <div class="vertical-sep-gold"></div>
-            <div class="date-num-large">27th</div>
+            <div class="date-num-large">${saveDate.day}${saveDate.suffix}</div>
             <div class="vertical-sep-gold"></div>
-            <div class="date-label-cell" style="text-align:left;">OCTOBER<br>2026</div>
+            <div class="date-label-cell" style="text-align:left;">${saveDate.month}<br>${saveDate.year}</div>
           </div>
         </div>
 
@@ -660,7 +738,7 @@ export default function render({ guest, wedding: w, events = [] }) {
         <div>
           <div class="host-cordial-lead">A Cordial Invitation</div>
           <div class="host-name-bold">${esc(w.host_name || 'Mrs. & Mr. Md Kalim Khan')}</div>
-          <div class="host-address-text">${esc(w.address || '283/10 Belilious Road, Howrah<br>West Bengal – 711101')}</div>
+          <div class="host-address-text">${esc(w.address || '283/10 Belilious Road, Howrah, West Bengal – 711101')}</div>
           <div class="host-contact-text">M.: ${esc(w.rsvp_contacts || '9330981386, +917033098070')}</div>
           <svg class="floret-tail-divider" viewBox="0 0 160 14"><use href="#flourishTail"/></svg>
         </div>
@@ -681,11 +759,11 @@ export default function render({ guest, wedding: w, events = [] }) {
         </div>
 
         <div>
-          <div style="font-style:italic; font-size:12px; color:#5c202a;">
+          <div style="font-style:italic; font-size:12px; color:var(--ink-text);">
             ${esc(w.invocation || 'In the name of Allah the most beneficent & merciful')}
           </div>
           <svg style="width:140px; height:12px; margin:2px auto;"><use href="#flourishTail"/></svg>
-          <div style="font-family:'Cinzel',serif; font-size:14px; letter-spacing:3px; color:var(--oxblood); font-weight:700;">Marriage Ceremony</div>
+          <div style="font-family:'Cinzel',serif; font-size:14px; letter-spacing:3px; color:var(--oxblood); font-weight:700;">${ceremonyTitle}</div>
         </div>
 
         <div>
@@ -726,7 +804,7 @@ export default function render({ guest, wedding: w, events = [] }) {
         </div>
 
         <div>
-          <div style="font-style:italic; font-size:11.5px; color:#5c202a;">Insha Allah, to be solemnised as per the programme</div>
+          <div style="font-style:italic; font-size:11.5px; color:var(--ink-text);">Insha Allah, to be solemnised as per the programme</div>
           <div style="font-family:'Cinzel',serif; font-size:13px; letter-spacing:2.5px; color:var(--oxblood); font-weight:700; margin-top:2px;">Wedding Programme</div>
         </div>
 
@@ -772,7 +850,7 @@ export default function render({ guest, wedding: w, events = [] }) {
         </div>
 
         <div>
-          <div style="font-family:'Cinzel',serif; font-size:8px; color:var(--oxblood); font-weight:700;">Banquet Venue</div>
+          <div style="font-family:'Cinzel',serif; font-size:8px; color:var(--oxblood); font-weight:700;">${venueTitle}</div>
           <div style="font-size:14px; font-weight:700; color:var(--oxblood);">${esc(w.venue || 'Shuubh Arambh Banquet')}</div>
           <div style="font-size:10px; opacity:0.85;">${esc(w.address || '131, Belilious Rd, Tikiapara, Howrah')}</div>
         </div>
@@ -794,8 +872,8 @@ export default function render({ guest, wedding: w, events = [] }) {
 
         <div>
           <svg class="crest-ornament-wrap" viewBox="0 0 160 56" style="height:40px;">
-            <circle cx="80" cy="28" r="22" fill="none" stroke="#6f0f1c" stroke-width="1.3"/>
-            <text x="80" y="36" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="20" font-weight="700" fill="#6f0f1c">${initials}</text>
+            <circle cx="80" cy="28" r="22" fill="none" stroke="var(--oxblood)" stroke-width="1.3"/>
+            <text x="80" y="36" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="20" font-weight="700" fill="var(--oxblood)">${initials}</text>
           </svg>
           <div style="font-family:'Great Vibes',cursive; font-size:38px; color:var(--oxblood); line-height:1; margin:2px 0;">
             With Love &amp; Warmest Regards
@@ -810,7 +888,7 @@ export default function render({ guest, wedding: w, events = [] }) {
           <div style="font-family:'Cinzel',serif; font-size:8.5px; letter-spacing:2px; text-transform:uppercase; color:#8b6818; font-weight:700; margin-bottom:4px;">
             ✦ The Auspicious Moment Arrives In ✦
           </div>
-          <div class="countdown-gold-deck" id="weddingCountdown" data-target="${esc(w.date || '2026-10-27T21:30:00')}">
+          <div class="countdown-gold-deck" id="weddingCountdown">
             <div class="count-pod">
               <div class="count-digits" id="cdDays">00</div>
               <div class="count-tag">Days</div>
@@ -892,7 +970,7 @@ export function mount(root, { guest, wedding: w }) {
   const audio = root.querySelector('#royalAudio');
 
   let activeIndex = 0;
-  let audioInitiated = false; // Audio sirf EK baar trigger hoga
+  let audioInitiated = false; // Audio play-once protection
 
   function switchScreen(targetIndex) {
     if (targetIndex === activeIndex || targetIndex < 0 || targetIndex >= screens.length) return;
@@ -910,7 +988,7 @@ export function mount(root, { guest, wedding: w }) {
     }, 400);
   }
 
-  // 1. Navigation Button Handler (Audio First Click par Play hoga, Baad me Repeat NAHI hoga)
+  // 1. Navigation Button Handler (Triggers Audio strictly ONCE on user gesture)
   root.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-next]');
     if (btn) {
@@ -923,13 +1001,13 @@ export function mount(root, { guest, wedding: w }) {
         audio.play().then(() => {
           if (audioBtn) audioBtn.classList.add('spinning');
         }).catch((err) => {
-          console.log("Audio notice:", err);
+          console.log("Audio play policy notification:", err);
         });
       }
     }
   });
 
-  // 2. Audio Khatam hone par Spinning Icon band hoga (No Loop)
+  // 2. Audio Ends Listener (No Loop, Clean Stop)
   if (audio) {
     audio.addEventListener('ended', () => {
       if (audioBtn) {
@@ -950,11 +1028,10 @@ export function mount(root, { guest, wedding: w }) {
     };
   }
 
-  // 4. AUTOMATIC LIVE COUNTDOWN TIMER (LAST SCREEN)
+  // 4. AUTOMATIC LIVE REAL-TIME COUNTDOWN TIMER (LAST SCREEN)
   const cdElement = root.querySelector('#weddingCountdown');
   if (cdElement) {
-    // 27th October 2026, 9:30 PM Target Date
-    const targetDate = new Date("2026-10-27T21:30:00+05:30").getTime();
+    const targetDate = parseWeddingDateTime(w.date, w.time);
 
     const elDays = root.querySelector('#cdDays');
     const elHours = root.querySelector('#cdHours');
@@ -987,7 +1064,6 @@ export function mount(root, { guest, wedding: w }) {
     updateCountdown();
     const timerInterval = setInterval(updateCountdown, 1000);
 
-    // Memory clean on disconnect
     const obs = new MutationObserver(() => {
       if (!document.body.contains(root)) {
         clearInterval(timerInterval);
@@ -997,18 +1073,23 @@ export function mount(root, { guest, wedding: w }) {
     obs.observe(document.body, { childList: true, subtree: true });
   }
 
-  // 5. Google Calendar Link
+  // 5. Dynamic Google Calendar Link
   const calBtn = root.querySelector('#saveCalBtn');
   if (calBtn) {
     const calTitle = encodeURIComponent(`Wedding: ${w.bride_name || 'Tarana'} & ${w.groom_name || 'Akbar'}`);
     const calDesc = encodeURIComponent(`You are cordially invited to celebrate the marriage of ${w.bride_name || 'Tarana'} & ${w.groom_name || 'Akbar'}. Venue: ${w.venue || ''}, ${w.address || ''}`);
     const calLoc = encodeURIComponent(`${w.venue || ''}, ${w.address || ''}`);
-    const startUTC = "20261027T160000Z";
-    const endUTC = "20261027T183000Z";
+
+    const startMs = parseWeddingDateTime(w.date, w.time);
+    const endMs = startMs + (2.5 * 60 * 60 * 1000); // 2.5-hour default duration
+    const toUtcStamp = (ms) => new Date(ms).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const startUTC = toUtcStamp(startMs);
+    const endUTC = toUtcStamp(endMs);
+
     calBtn.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${calTitle}&dates=${startUTC}/${endUTC}&details=${calDesc}&location=${calLoc}`;
   }
 
-  // 6. WhatsApp RSVP Link
+  // 6. Dynamic WhatsApp RSVP Link
   const rsvpBtn = root.querySelector('#waRsvpBtn');
   if (rsvpBtn) {
     const rsvpPhone = esc(w.rsvp_number || '919330981386');
