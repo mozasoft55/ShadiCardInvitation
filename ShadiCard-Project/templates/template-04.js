@@ -51,7 +51,7 @@ export default function render({ guest, wedding: w, events = [] }) {
  background:radial-gradient(circle at 50% 18%,var(--red2),var(--deep) 78%)}
 .hr:before{content:"";position:absolute;inset:0;opacity:.07;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cg fill='none' stroke='%23fff'%3E%3Ccircle cx='36' cy='36' r='13'/%3E%3Cpath d='M36 4v64M4 36h64'/%3E%3Ccircle cx='36' cy='36' r='26' stroke-dasharray='1 5'/%3E%3C/g%3E%3C/svg%3E")}
 .vp{position:relative;width:100%;max-width:430px;height:100%}
-.pg{position:absolute;inset:0 0 3.4em;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;visibility:hidden}.pg::-webkit-scrollbar{display:none}.pg.on{visibility:visible}
+.pg{position:absolute;inset:0 0 3.4em;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;visibility:hidden;opacity:0;transition:opacity .7s ease .1s}.pg::-webkit-scrollbar{display:none}.pg.on{visibility:visible;opacity:1}
 .pa{flex:0 0 100%;scroll-snap-align:center;padding:max(8px,env(safe-area-inset-top)) 10px 4px;font-size:clamp(11px,min(2.1dvh,4.5vw),18px);line-height:1.4}
 .cd{position:relative;height:100%;overflow:hidden;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;text-align:center;padding:1.6em 1.5em;
  background:radial-gradient(circle at 50% 0,#fffdf7,var(--iv));border:.55em solid var(--red);border-radius:1.2em;
@@ -60,7 +60,7 @@ export default function render({ guest, wedding: w, events = [] }) {
 .bn{font-family:'Tiro Devanagari Hindi','Noto Serif Devanagari',serif;color:var(--red);line-height:1.3}.cap{font:700 .78em 'Cinzel',serif;letter-spacing:.2em;text-transform:uppercase;color:var(--red2)}
 .sc{font-family:'Great Vibes',cursive;color:var(--red);line-height:1.1;font-weight:400}.nm{font:700 1em/1.2 'Playfair Display',serif;color:var(--red)}
 .tx{font-weight:500;line-height:1.5}.it{font-style:italic}small{display:block;font-size:.86em;opacity:.85}
-.nv{position:absolute;left:0;right:0;bottom:0;height:3.4em;display:flex;align-items:center;justify-content:center;gap:.9em;font-size:16px;visibility:hidden}.nv.on{visibility:visible}
+.nv{position:absolute;left:0;right:0;bottom:0;height:3.4em;display:flex;align-items:center;justify-content:center;gap:.9em;font-size:16px;visibility:hidden;opacity:0;transition:opacity .7s ease .2s}.nv.on{visibility:visible;opacity:1}
 .nv button{width:2.1em;height:2.1em;border-radius:50%;border:1px solid var(--gold);background:rgba(0,0,0,.25);color:#f4d896;font-size:1.1em;cursor:pointer}
 .nv i{width:.6em;height:.6em;border-radius:50%;background:rgba(244,216,150,.35);transition:.3s;cursor:pointer}.nv i.on{width:1.8em;border-radius:.4em;background:var(--gold)}
 .ev{display:flex;align-items:center;gap:.8em;width:100%;text-align:left;padding:.4em .6em;border-bottom:1px dashed rgba(201,150,45,.6)}.ev:last-child{border:0}
@@ -188,6 +188,8 @@ export function mount(root, { guest, wedding: w }) {
     function finish() {
       if (done) return; done = true;
       playMusic();
+      pg.classList.add('on');
+      nv.classList.add('on');
       sv.classList.add('go');
       setTimeout(() => sv.classList.add('gone'), 850);
     }
