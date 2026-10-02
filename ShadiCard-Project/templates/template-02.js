@@ -1,6 +1,6 @@
 // ============================================================================
-// TEMPLATE-02: PIXEL-PERFECT ROYAL HERITAGE CARD
-// EXACT TYPOGRAPHY, EMBELLISHED FLOURISHES & BALANCED SPACING
+// TEMPLATE-02: ROYAL HERITAGE DIGITAL INVITATION (COMPLETE PRODUCTION SUITE)
+// PURE CODE • 100dvh VIEWPORT • AUDIO AUTO-TRIGGER • ZERO-SCROLL 60 FPS
 // ============================================================================
 
 const esc = (s) =>
@@ -12,6 +12,7 @@ const esc = (s) =>
     "'": '&#39;'
   }[c]));
 
+// Clean and sanitize raw Excel 1899 timestamps into 12-hour AM/PM format
 function formatLuxuryTime(t) {
   if (!t) return '09:30 PM';
   const str = String(t).trim();
@@ -24,6 +25,7 @@ function formatLuxuryTime(t) {
   return str.toUpperCase();
 }
 
+// Clean and sanitize ISO date strings
 function formatLuxuryDate(d) {
   if (!d) return '27 OCTOBER 2026';
   const str = String(d).trim();
@@ -40,6 +42,10 @@ function formatLuxuryDate(d) {
   return str.toUpperCase();
 }
 
+// ============================================================================
+// RENDER FUNCTION
+// ============================================================================
+
 export default function render({ guest, wedding: w, events = [] }) {
   const bride = esc(w.bride_name || 'Tarana');
   const groom = esc(w.groom_name || 'Akbar');
@@ -51,7 +57,7 @@ export default function render({ guest, wedding: w, events = [] }) {
   const initials = `${(bride[0] || 'T')}${(groom[0] || 'A')}`.toUpperCase();
 
   return `
-  <!-- High-End Typefaces matched to Royal Stationery -->
+  <!-- Google Typography Suite -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
@@ -69,6 +75,7 @@ export default function render({ guest, wedding: w, events = [] }) {
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+    /* Root App Viewport */
     .royal-universe {
       position: absolute;
       inset: 0;
@@ -105,6 +112,7 @@ export default function render({ guest, wedding: w, events = [] }) {
       padding: max(6px, env(safe-area-inset-top)) 6px max(8px, env(safe-area-inset-bottom));
     }
 
+    /* Screen Panels (Only 1 Active At A Time) */
     .screen-panel {
       position: absolute;
       inset: max(6px, env(safe-area-inset-top)) 6px max(8px, env(safe-area-inset-bottom));
@@ -169,7 +177,7 @@ export default function render({ guest, wedding: w, events = [] }) {
       pointer-events: none;
     }
 
-    /* Floating Classical Music Controller */
+    /* Floating Music Knob */
     .audio-knob {
       position: fixed;
       top: max(14px, env(safe-area-inset-top));
@@ -236,9 +244,7 @@ export default function render({ guest, wedding: w, events = [] }) {
       background: var(--gold-24k);
     }
 
-    /* -------------------------------------------------------------
-       PRECISION TYPOGRAPHY & LAYOUT MATCHED TO REFERENCE CARD
-       ------------------------------------------------------------- */
+    /* Screen Elements */
     .crest-ornament-wrap {
       width: 150px;
       height: 54px;
@@ -261,7 +267,6 @@ export default function render({ guest, wedding: w, events = [] }) {
       margin: 2px auto 4px;
     }
 
-    /* Date Showcase */
     .save-the-date-deck {
       display: flex;
       align-items: center;
@@ -292,7 +297,6 @@ export default function render({ guest, wedding: w, events = [] }) {
       line-height: 1;
     }
 
-    /* Couple Names Section with Proper Gap */
     .couple-layout-container {
       margin: 4px 0 6px;
       display: flex;
@@ -315,7 +319,6 @@ export default function render({ guest, wedding: w, events = [] }) {
       transform: translateY(-4px);
     }
 
-    /* Exact 'To ____________ Guest' Mapping */
     .to-guest-field {
       width: 90%;
       margin: 6px auto;
@@ -354,7 +357,6 @@ export default function render({ guest, wedding: w, events = [] }) {
       margin-top: 4px;
     }
 
-    /* Person & Family Section with Vine Embellishments */
     .manifest-flourish-row {
       display: flex;
       align-items: center;
@@ -398,7 +400,6 @@ export default function render({ guest, wedding: w, events = [] }) {
       margin: 0 4px;
     }
 
-    /* Host Details Section */
     .host-cordial-lead {
       font-family: 'Cormorant Garamond', serif;
       font-style: italic;
@@ -433,7 +434,6 @@ export default function render({ guest, wedding: w, events = [] }) {
       margin: 4px auto 0;
     }
 
-    /* Screen 3 Timeline Leafs */
     .event-leaf-stack {
       width: 100%;
       display: flex;
@@ -453,7 +453,6 @@ export default function render({ guest, wedding: w, events = [] }) {
       text-align: left;
     }
 
-    /* Action Buttons */
     .closing-buttons-list {
       width: 100%;
       max-width: 290px;
@@ -506,21 +505,18 @@ export default function render({ guest, wedding: w, events = [] }) {
     }
   </style>
 
-  <!-- Reusable SVG Vector Flourishes matching Reference Card -->
+  <!-- Reusable Shared SVG Flourishes -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
-      <!-- Vine Branch Embellishment for Person / Family -->
       <g id="vineBranch">
         <path d="M12,24 C10,16 6,12 0,8 C8,10 14,7 18,0 C17,8 21,12 28,14 C20,15 15,19 12,24 Z" fill="#6f0f1c"/>
         <circle cx="2" cy="6" r="1.5" fill="#6f0f1c"/>
         <circle cx="20" cy="2" r="1.5" fill="#6f0f1c"/>
         <circle cx="26" cy="16" r="1.5" fill="#6f0f1c"/>
       </g>
-      <!-- Bottom Flourish Tail with Flower Blossom -->
       <g id="flourishTail">
         <line x1="10" y1="8" x2="68" y2="8" stroke="#6f0f1c" stroke-width="1.2"/>
         <line x1="92" y1="8" x2="150" y2="8" stroke="#6f0f1c" stroke-width="1.2"/>
-        <!-- 8-petal floret blossom -->
         <circle cx="80" cy="8" r="3" fill="#6f0f1c"/>
         <circle cx="80" cy="3" r="1.6" fill="#6f0f1c"/>
         <circle cx="80" cy="13" r="1.6" fill="#6f0f1c"/>
@@ -536,11 +532,11 @@ export default function render({ guest, wedding: w, events = [] }) {
 
   <div class="royal-universe">
     
-    <!-- Audio Button -->
+    <!-- Audio Element (invitation.mp3 fallback) -->
     <button class="audio-knob" id="audioToggle" aria-label="Toggle Music" type="button">
       <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-      <audio id="royalAudio" loop preload="none">
-        <source src="${esc(w.music_url || 'https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3')}" type="audio/mp3">
+      <audio id="royalAudio" loop preload="auto">
+        <source src="${esc(w.music_url || 'invitation.mp3')}" type="audio/mp3">
       </audio>
     </button>
 
@@ -556,12 +552,9 @@ export default function render({ guest, wedding: w, events = [] }) {
         </div>
 
         <div>
-          <!-- Embellished Ornate Crest -->
           <svg class="crest-ornament-wrap" viewBox="0 0 160 56">
-            <!-- Winged flourishes -->
             <path d="M42,28 C28,18 16,24 4,32 C18,34 30,32 40,28 Z" fill="#6f0f1c" opacity=".85"/>
             <path d="M118,28 C132,18 144,24 156,32 C142,34 130,32 120,28 Z" fill="#6f0f1c" opacity=".85"/>
-            <!-- Center Monogram -->
             <circle cx="80" cy="28" r="22" fill="none" stroke="#6f0f1c" stroke-width="1.4"/>
             <circle cx="80" cy="28" r="19" fill="none" stroke="#b98a2f" stroke-width=".8"/>
             <text x="80" y="36" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="21" font-weight="700" fill="#6f0f1c">${initials}</text>
@@ -591,7 +584,7 @@ export default function render({ guest, wedding: w, events = [] }) {
       </section>
 
       <!-- ========================================================
-           SCREEN 1: SAVE THE DATE / VIP PASS (100% MATCHED TO REFERENCE)
+           SCREEN 1: SAVE THE DATE / VIP PASS
            ======================================================== -->
       <section class="screen-panel" data-index="1" aria-label="Save The Date">
         <div class="stepper-dots">
@@ -599,7 +592,6 @@ export default function render({ guest, wedding: w, events = [] }) {
           <span class="step-dot"></span><span class="step-dot"></span><span class="step-dot"></span>
         </div>
 
-        <!-- 1. Header Emblem & Title -->
         <div>
           <svg class="crest-ornament-wrap" viewBox="0 0 160 56">
             <path d="M42,28 C28,18 16,24 4,32 C18,34 30,32 40,28 Z" fill="#6f0f1c" opacity=".85"/>
@@ -613,7 +605,6 @@ export default function render({ guest, wedding: w, events = [] }) {
           <h2 class="main-invitation-title">Wedding Invitation</h2>
           <svg class="floret-bar-center" viewBox="0 0 160 14"><use href="#flourishTail"/></svg>
 
-          <!-- 2. Save the date row -->
           <div class="save-the-date-deck">
             <div class="date-label-cell" style="text-align:right;">SAVE THE DATE<br>TUESDAY</div>
             <div class="vertical-sep-gold"></div>
@@ -623,7 +614,6 @@ export default function render({ guest, wedding: w, events = [] }) {
           </div>
         </div>
 
-        <!-- 3. Couple Calligraphy with Comfortable Breathing Room -->
         <div>
           <div class="couple-layout-container">
             <span class="name-bride">${bride}</span>
@@ -631,7 +621,6 @@ export default function render({ guest, wedding: w, events = [] }) {
             <span class="name-groom">${groom}</span>
           </div>
 
-          <!-- 4. "To ____________ Guest" Precision Placement -->
           <div class="to-guest-field">
             <div>
               <span class="to-label">To</span>
@@ -641,7 +630,6 @@ export default function render({ guest, wedding: w, events = [] }) {
             <div class="guide-subline-bar"></div>
           </div>
 
-          <!-- 5. Person & Family Boxes Flanked by Vine Leaves -->
           <div class="manifest-flourish-row">
             <svg class="vine-branch-svg" viewBox="0 0 28 24"><use href="#vineBranch"/></svg>
 
@@ -661,7 +649,6 @@ export default function render({ guest, wedding: w, events = [] }) {
           </div>
         </div>
 
-        <!-- 6. Host Block & Bottom Flourish -->
         <div>
           <div class="host-cordial-lead">A Cordial Invitation</div>
           <div class="host-name-bold">${esc(w.host_name || 'Mrs. & Mr. Md Kalim Khan')}</div>
@@ -735,7 +722,6 @@ export default function render({ guest, wedding: w, events = [] }) {
           <div style="font-family:'Cinzel',serif; font-size:13px; letter-spacing:2.5px; color:var(--oxblood); font-weight:700; margin-top:2px;">Wedding Programme</div>
         </div>
 
-        <!-- Compressed Timeline without overflow -->
         <div class="event-leaf-stack">
           ${events && events.length ? events.map(ev => `
             <div class="event-leaf">
@@ -811,7 +797,6 @@ export default function render({ guest, wedding: w, events = [] }) {
           </div>
         </div>
 
-        <!-- 3 Luxury Action Pills -->
         <div class="closing-buttons-list">
           ${w.map_url ? `
             <a href="${esc(w.map_url)}" target="_blank" rel="noopener noreferrer" class="pill-action pill-gold">
@@ -827,7 +812,6 @@ export default function render({ guest, wedding: w, events = [] }) {
             <span>💬 Confirm RSVP via WhatsApp</span>
           </a>
 
-          <!-- Scratch Card Trigger -->
           <button type="button" id="triggerScratch" class="pill-action pill-surprise">
             <span>✨ One Little Surprise (Scratch)</span>
           </button>
@@ -865,7 +849,7 @@ export default function render({ guest, wedding: w, events = [] }) {
 }
 
 // ============================================================================
-// MOUNT: 60 FPS TRANSITION ENGINE & APP CONCIERGE
+// MOUNT FUNCTION (STATE MACHINE & INTERACTIONS)
 // ============================================================================
 
 export function mount(root, { guest, wedding: w }) {
@@ -873,36 +857,46 @@ export function mount(root, { guest, wedding: w }) {
   const audioBtn = root.querySelector('#audioToggle');
   const audio = root.querySelector('#royalAudio');
 
-  let currentIdx = 0;
+  let activeIndex = 0;
+  let audioInitiated = false;
 
-  function goToScreen(targetIdx) {
-    if (targetIdx === currentIdx || targetIdx < 0 || targetIdx >= screens.length) return;
+  function switchScreen(targetIndex) {
+    if (targetIndex === activeIndex || targetIndex < 0 || targetIndex >= screens.length) return;
 
-    const curr = screens[currentIdx];
-    const nxt = screens[targetIdx];
+    const currentScreen = screens[activeIndex];
+    const targetScreen = screens[targetIndex];
 
-    curr.classList.add('is-exiting');
-    curr.classList.remove('is-active');
+    currentScreen.classList.add('is-exiting');
+    currentScreen.classList.remove('is-active');
 
     setTimeout(() => {
-      curr.classList.remove('is-exiting');
-      nxt.classList.add('is-active');
-      currentIdx = targetIdx;
+      currentScreen.classList.remove('is-exiting');
+      targetScreen.classList.add('is-active');
+      activeIndex = targetIndex;
     }, 400);
   }
 
+  // Unified Button Handler (Navigation + Tap-To-Play Audio Trigger)
   root.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-next]');
     if (btn) {
       const target = parseInt(btn.getAttribute('data-next'), 10);
-      goToScreen(target);
+      switchScreen(target);
 
-      if (audio && audio.paused && audioBtn) {
-        audio.play().then(() => audioBtn.classList.add('spinning')).catch(() => {});
+      // User gesture triggers audio playback per modern browser requirements
+      if (audio && !audioInitiated) {
+        audioInitiated = true;
+        audio.currentTime = 0;
+        audio.play().then(() => {
+          if (audioBtn) audioBtn.classList.add('spinning');
+        }).catch((err) => {
+          console.log("Audio auto-play policy notification:", err);
+        });
       }
     }
   });
 
+  // Audio Toggle Switch
   if (audioBtn && audio) {
     audioBtn.onclick = () => {
       if (audio.paused) {
@@ -914,35 +908,41 @@ export function mount(root, { guest, wedding: w }) {
     };
   }
 
-  const cal = root.querySelector('#saveCalBtn');
-  if (cal) {
-    const title = encodeURIComponent(`Wedding: ${w.bride_name || 'Tarana'} & ${w.groom_name || 'Akbar'}`);
-    const desc = encodeURIComponent(`You are cordially invited to celebrate the marriage of ${w.bride_name || 'Tarana'} & ${w.groom_name || 'Akbar'}. Venue: ${w.venue || ''}`);
-    const loc = encodeURIComponent(`${w.venue || ''}, ${w.address || ''}`);
-    cal.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=20261027T143000Z/20261027T183000Z&details=${desc}&location=${loc}`;
+  // Dynamic Google Calendar Generator (27th Oct 2026)
+  const calBtn = root.querySelector('#saveCalBtn');
+  if (calBtn) {
+    const calTitle = encodeURIComponent(`Wedding: ${w.bride_name || 'Tarana'} & ${w.groom_name || 'Akbar'}`);
+    const calDesc = encodeURIComponent(`You are cordially invited to celebrate the marriage of ${w.bride_name || 'Tarana'} & ${w.groom_name || 'Akbar'}. Venue: ${w.venue || ''}, ${w.address || ''}`);
+    const calLoc = encodeURIComponent(`${w.venue || ''}, ${w.address || ''}`);
+    const startUTC = "20261027T143000Z";
+    const endUTC = "20261027T183000Z";
+    calBtn.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${calTitle}&dates=${startUTC}/${endUTC}&details=${calDesc}&location=${calLoc}`;
   }
 
-  const rsvp = root.querySelector('#waRsvpBtn');
-  if (rsvp) {
-    const num = esc(w.rsvp_number || '919330981386');
+  // Dynamic WhatsApp VIP Concierge
+  const rsvpBtn = root.querySelector('#waRsvpBtn');
+  if (rsvpBtn) {
+    const rsvpPhone = esc(w.rsvp_number || '919330981386');
     const msg = encodeURIComponent(`Aadab / Namaste, I will be attending the wedding of ${w.bride_name || 'Tarana'} & ${w.groom_name || 'Akbar'}! Guest: ${guest.name || 'Guest'}`);
-    rsvp.href = `https://wa.me/${num}?text=${msg}`;
+    rsvpBtn.href = `https://wa.me/${rsvpPhone}?text=${msg}`;
   }
 
+  // Canvas Scratch Card Handlers
   const modal = root.querySelector('#scratchModal');
-  const trigger = root.querySelector('#triggerScratch');
-  const close = root.querySelector('#closeScratch');
-  const cvs = root.querySelector('#scratchCanvas');
+  const openScratch = root.querySelector('#triggerScratch');
+  const closeScratch = root.querySelector('#closeScratch');
+  const canvas = root.querySelector('#scratchCanvas');
 
-  if (trigger && modal && cvs) {
-    trigger.onclick = () => {
+  if (openScratch && modal && canvas) {
+    openScratch.onclick = () => {
       modal.classList.add('is-open');
-      initScratch(cvs);
+      initScratch(canvas);
     };
-    close.onclick = () => modal.classList.remove('is-open');
+    closeScratch.onclick = () => modal.classList.remove('is-open');
   }
 }
 
+// Pure Canvas 2D Gold Metallic Foil Scratching Engine
 function initScratch(canvas) {
   if (canvas._init) return;
   canvas._init = true;
