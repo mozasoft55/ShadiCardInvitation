@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#32030B">
+  <title>Wedding Invitation Concierge & Share</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --oxblood: #6f0f1c;
+      --oxblood-deep: #3b050f;
+      --oxblood-base: #180206;
+      --gold-24k: #d4af37;
+      --gold-deep: #b98a2f;
+      --gold-light: #f7e5b5;
+      --paper: #fffcf6;
+      --paper-shade: #f5ead2;
+      --text: #3b1a1f;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% 20%, #3a040d 0%, #150104 70%, #090002 100%);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.12) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .share-container {
+      position: relative;
+      z-index: 10;
+      width: min(92vw, 440px);
+      margin: 20px auto;
+      border-radius: 28px;
+      background: linear-gradient(180deg, var(--paper) 0%, #faf1dd 60%, var(--paper-shade) 100%);
+      border: 2px solid var(--gold-24k);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.75), 0 0 35px rgba(212, 175, 55, 0.15);
+      padding: 30px 22px 24px;
+      text-align: center;
+    }
+
+    .share-container::before {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border: 1px solid rgba(212, 175, 55, 0.65);
+      border-radius: 22px;
+      pointer-events: none;
+    }
+
+    /* Monogram */
+    .crest-badge {
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 8px;
+      border: 1.5px solid var(--oxblood);
+      border-radius: 50%;
+      outline: 1.5px solid var(--gold-24k);
+      outline-offset: 3px;
+      display: grid;
+      place-items: center;
+      font-family: 'Cinzel', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--oxblood);
+      background: #fffdfa;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+    }
+
+    .top-eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 9.5px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--gold-deep);
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .couple-title {
+      font-family: 'Great Vibes', cursive;
+      font-size: 38px;
+      color: var(--oxblood);
+      line-height: 1;
+      margin: 4px 0 16px;
+    }
+
+    /* Form Fields */
+    .field-label {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--oxblood);
+      text-align: left;
+      display: block;
+      margin: 14px 4px 6px;
+    }
+
+    .input-royal {
+      width: 100%;
+      height: 48px;
+      border-radius: 12px;
+      border: 1.5px solid var(--gold-deep);
+      background: #ffffff;
+      padding: 0 16px;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 16px;
+      color: var(--oxblood);
+      outline: none;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-royal:focus {
+      border-color: var(--oxblood);
+      box-shadow: 0 0 10px rgba(111, 15, 28, 0.25);
+    }
+
+    /* Radio Switcher (Person vs Family) */
+    .toggle-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 8px 0 14px;
+    }
+
+    .radio-card {
+      position: relative;
+      border: 1.5px solid var(--gold-deep);
+      border-radius: 14px;
+      background: #fff;
+      padding: 12px 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
+
+    .radio-card input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .radio-title {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--oxblood);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .radio-sub {
+      font-size: 11px;
+      font-style: italic;
+      color: #6a323d;
+      margin-top: 2px;
+    }
+
+    .radio-card.active {
+      background: linear-gradient(135deg, rgba(111, 15, 28, 0.08), rgba(212, 175, 55, 0.15));
+      border-color: var(--oxblood);
+      box-shadow: 0 6px 18px rgba(111, 15, 28, 0.18);
+    }
+
+    .radio-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1.5px solid var(--oxblood);
+      display: grid;
+      place-items: center;
+    }
+    .radio-card.active .radio-dot::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--oxblood);
+    }
+
+    /* Person Counter */
+    .counter-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      border: 1.5px solid var(--gold-deep);
+      border-radius: 12px;
+      padding: 4px 12px;
+      margin-bottom: 14px;
+      transition: opacity 0.3s;
+    }
+    .counter-btn {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--gold-deep);
+      border-radius: 50%;
+      background: var(--paper-shade);
+      color: var(--oxblood);
+      font-size: 20px;
+      font-weight: bold;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .counter-btn:active { transform: scale(0.9); }
+    .counter-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--oxblood);
+    }
+
+    /* Live Link Preview Box */
+    .preview-box {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px dashed var(--gold-deep);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin: 14px 0 18px;
+      text-align: left;
+    }
+    .preview-title {
+      font-family: 'Cinzel', serif;
+      font-size: 8px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold-deep);
+      font-weight: 700;
+    }
+    .preview-url {
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--oxblood);
+      word-break: break-all;
+      margin-top: 3px;
+      display: block;
+      font-weight: 600;
+    }
+
+    /* Action Buttons */
+    .btn-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn-share-whatsapp {
+      background: linear-gradient(135deg, #25D366, #128C7E);
+      color: #ffffff;
+      border: 1px solid #0f6c61;
+      height: 50px;
+      border-radius: 30px;
+      font-family: 'Cinzel', serif;
+      font-size: 11.5px;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(37, 211, 102, 0.35);
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+    }
+    .btn-share-whatsapp:active { transform: scale(0.97); }
+
+    .btn-view-card {
+      background: linear-gradient(135deg, var(--oxblood), var(--oxblood-deep));
+      color: var(--gold-light);
+      border: 1.5px solid var(--gold-24k);
+      height: 48px;
+      border-radius: 30px;
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(111, 15, 28, 0.35);
+      text-decoration: none;
+    }
+    .btn-view-card:active { transform: scale(0.97); }
+
+    .btn-copy {
+      background: #ffffff;
+      color: var(--oxblood);
+      border: 1.2px solid var(--oxblood);
+      height: 42px;
+      border-radius: 30px;
+      font-family: 'Cinzel', serif;
+      font-size: 9.5px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(30px);
+      background: var(--oxblood-deep);
+      color: var(--gold-light);
+      border: 1px solid var(--gold-24k);
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 1px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 999;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="share-container">
+    <!-- Crest -->
+    <div class="crest-badge" id="coupleInitials">JA</div>
+    <div class="top-eyebrow">Digital Wedding Concierge</div>
+    <div class="couple-title" id="coupleNames">Jodha &amp; Akbar</div>
+
+    <!-- Form Section -->
+    <label class="field-label" for="guestNameInput">1. Guest Name (Kisko invite karna hai?)</label>
+    <input type="text" id="guestNameInput" class="input-royal" placeholder="e.g. Shamim Khan" autocomplete="off">
+
+    <label class="field-label">2. Invite Type (Person ya Family)</label>
+    <div class="toggle-group">
+      <!-- Option: Person -->
+      <label class="radio-card active" id="cardPerson">
+        <input type="radio" name="inviteType" value="person" checked>
+        <div class="radio-title">
+          <span class="radio-dot"></span>
+          <span>Person</span>
+        </div>
+        <span class="radio-sub">Specific Members</span>
+      </label>
+
+      <!-- Option: Family -->
+      <label class="radio-card" id="cardFamily">
+        <input type="radio" name="inviteType" value="family">
+        <div class="radio-title">
+          <span class="radio-dot"></span>
+          <span>Family</span>
+        </div>
+        <span class="radio-sub">Poora Parivaar</span>
+      </label>
+    </div>
+
+    <!-- Person Counter (Visible when Person is checked) -->
+    <div id="counterSection">
+      <label class="field-label" style="margin-top:0;">Number of Persons</label>
+      <div class="counter-wrap">
+        <button class="counter-btn" id="btnMinus" type="button">−</button>
+        <span class="counter-val" id="personCountText">1</span>
+        <button class="counter-btn" id="btnPlus" type="button">+</button>
+      </div>
+    </div>
+
+    <!-- Live Preview Box -->
+    <div class="preview-box">
+      <div class="preview-title">Generated Personalized Link</div>
+      <span class="preview-url" id="liveUrlPreview">https://invite.mozasoft55.workers.dev/?w=...</span>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="btn-stack">
+      <!-- 1. Share On WhatsApp -->
+      <a href="#" id="btnWhatsApp" target="_blank" class="btn-share-whatsapp">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.187-2.59-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.698.056-2.127-.534-1.745-.722-2.884-2.499-2.971-2.616-.087-.116-.708-.94-.708-1.792s.448-1.27.607-1.444c.159-.175.348-.218.463-.218l.333.006c.108 0 .252-.041.393.299.144.348.491 1.2.534 1.288.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.087-.178.182-.077.355.101.174.449.741.964 1.2.662.591 1.221.774 1.394.861.174.086.275.073.376-.044.101-.116.433-.506.549-.68.116-.174.231-.145.39-.087s1.011.477 1.184.564.289.13.332.203c.044.073.044.419-.1.824z"/></svg>
+        <span>Share via WhatsApp</span>
+      </a>
+
+      <!-- 2. View Card -->
+      <a href="#" id="btnViewCard" target="_blank" class="btn-view-card">
+        <span>👁️ View Generated Card</span>
+      </a>
+
+      <!-- 3. Copy Link -->
+      <button class="btn-copy" id="btnCopy" type="button">
+        <span>📋 Copy Invitation Link</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="toast">Link Copied Successfully!</div>
+
+  <script type="module">
+    // CONFIGURATION
+    const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbwWI7CL6CND0wZNglUWGUeo8Z7acqDelEGZBn15W07bSSTNhTlsQJ-pBMjDMPCaZYU9/exec";
+
+    // 1. URL & SLUG PARSING
+    const currentUrl = new URL(window.location.href);
+    const searchParams = new URLSearchParams(window.location.search);
+    
+    // Support ?w=jodha-akbar-w0006 or path based
+    let slug = searchParams.get('w') || 'jodha-akbar-w0006';
+    slug = slug.replace(/\/share\/?$/, '').trim(); // strip /share if present
+
+    // Base target URL for card display
+    const baseUrl = `${window.location.origin}/?w=${encodeURIComponent(slug)}`;
+
+    // DOM REFERENCES
+    const guestInput = document.getElementById('guestNameInput');
+    const radioPerson = document.querySelector('input[value="person"]');
+    const radioFamily = document.querySelector('input[value="family"]');
+    const cardPerson = document.getElementById('cardPerson');
+    const cardFamily = document.getElementById('cardFamily');
+    const counterSec = document.getElementById('counterSection');
+    const countDisplay = document.getElementById('personCountText');
+    const btnMinus = document.getElementById('btnMinus');
+    const btnPlus = document.getElementById('btnPlus');
+    const previewDisplay = document.getElementById('liveUrlPreview');
+    const btnWhatsApp = document.getElementById('btnWhatsApp');
+    const btnViewCard = document.getElementById('btnViewCard');
+    const btnCopy = document.getElementById('btnCopy');
+    const toast = document.getElementById('toast');
+
+    let currentPersons = 1;
+    let weddingData = null;
+
+    // 2. FETCH WEDDING DETAILS (BRIDE, GROOM, EXCEL MESSAGE)
+    async function loadWeddingMetadata() {
+      try {
+        const res = await fetch(`${API_ENDPOINT}?action=wedding&slug=${encodeURIComponent(slug)}`);
+        const data = await res.json();
+        if (data.success && data.wedding) {
+          weddingData = data.wedding;
+          const b = weddingData.bride_name || 'Bride';
+          const g = weddingData.groom_name || 'Groom';
+          document.getElementById('coupleNames').textContent = `${b} & ${g}`;
+          document.getElementById('coupleInitials').textContent = `${b[0] || 'B'}${g[0] || 'G'}`.toUpperCase();
+        }
+      } catch (err) {
+        console.warn("Could not load remote metadata, using defaults:", err);
+      }
+      updateState();
+    }
+
+    // 3. STATE UPDATE & LINK COMPOSITION
+    function computePersonalizedURL() {
+      const rawName = (guestInput.value || '').trim() || 'Respected Guest';
+      const isFam = radioFamily.checked;
+
+      const pUrl = new URL(window.location.origin);
+      pUrl.searchParams.set('w', slug);
+      pUrl.searchParams.set('g', rawName);
+      pUrl.searchParams.set('p', isFam ? '1' : String(currentPersons));
+      pUrl.searchParams.set('f', isFam ? '1' : '0');
+
+      return {
+        cardUrl: pUrl.toString(),
+        guestName: rawName,
+        isFamily: isFam,
+        persons: currentPersons
+      };
+    }
+
+    function buildWhatsAppMessage(meta) {
+      const b = weddingData?.bride_name || 'Tarana';
+      const g = weddingData?.groom_name || 'Akbar';
+
+      // Agar Excel me custom share_message ho to use karein, warna clean standard format
+      if (weddingData?.share_message && weddingData.share_message.trim()) {
+        return weddingData.share_message
+          .replace('{guest}', meta.guestName)
+          .replace('{link}', meta.cardUrl)
+          .replace('{bride}', b)
+          .replace('{groom}', g);
+      }
+
+      // Default Professional Urdu/Hindi Invitation
+      return `Assalamu Alaikum,\n\nHum aap ko *${b} & ${g}* ki shaadi ke liye dil se dawat dete hain.\n\nAapka Digital Shadi Card:\n${meta.cardUrl}\n\nAapka aana hamare is khushi ke mauke ko aur bhi khaas banayega.\n\nJazakAllah Khair,\nMd Kalim Khan & Ahle-Khana`;
+    }
+
+    function updateState() {
+      const meta = computePersonalizedURL();
+
+      // Update Preview URL Box
+      previewDisplay.textContent = meta.cardUrl;
+
+      // Update View Card Link
+      btnViewCard.href = meta.cardUrl;
+
+      // Update WhatsApp Share Link
+      const msg = buildWhatsAppMessage(meta);
+      btnWhatsApp.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+    }
+
+    // 4. EVENT LISTENERS
+    guestInput.addEventListener('input', updateState);
+
+    cardPerson.addEventListener('click', () => {
+      radioPerson.checked = true;
+      cardPerson.classList.add('active');
+      cardFamily.classList.remove('active');
+      counterSec.style.display = 'block';
+      updateState();
+    });
+
+    cardFamily.addEventListener('click', () => {
+      radioFamily.checked = true;
+      cardFamily.classList.add('active');
+      cardPerson.classList.remove('active');
+      counterSec.style.display = 'none';
+      updateState();
+    });
+
+    btnPlus.addEventListener('click', () => {
+      if (currentPersons < 15) {
+        currentPersons++;
+        countDisplay.textContent = currentPersons;
+        updateState();
+      }
+    });
+
+    btnMinus.addEventListener('click', () => {
+      if (currentPersons > 1) {
+        currentPersons--;
+        countDisplay.textContent = currentPersons;
+        updateState();
+      }
+    });
+
+    btnCopy.addEventListener('click', async () => {
+      const meta = computePersonalizedURL();
+      try {
+        await navigator.clipboard.writeText(meta.cardUrl);
+        showToast("Invitation Link Copied!");
+      } catch (e) {
+        showToast("Copy failed, please copy manually");
+      }
+    });
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // Initialize
+    loadWeddingMetadata();
+  </script>
+</body>
+</html>
