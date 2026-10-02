@@ -1,1155 +1,171 @@
-// ============================================================================
-// TEMPLATE-02: ROYAL HERITAGE DIGITAL INVITATION (COMPLETE PRODUCTION SUITE)
-// AUDIO ONCE • LIVE REAL-TIME COUNTDOWN • DYNAMIC THEMES • 100dvh ZERO SCROLL
-// ============================================================================
+// TEMPLATE-02 · ROYAL HERITAGE (final) — em-based fluid layout: no dead gaps, scales with screen height, zero page scroll.
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl = u => /^https?:\/\//i.test(String(u || '').trim()) ? esc(String(u).trim()) : '';
+const lines = s => String(s ?? '').split(/[;\n]/).map(x => x.trim()).filter(Boolean);
+const THEMES = {
+  maroon:  {primary:'#7a1426', primary_dark:'#3f0713', accent:'#b98a2f', paper_top:'#FFFDF8', paper_bottom:'#F2DFBF', text:'#3b1a1f'},
+  emerald: {primary:'#0f4d3a', primary_dark:'#052b20', accent:'#b98a2f', paper_top:'#FBFFF9', paper_bottom:'#E4EFD9', text:'#14291f'},
+  navy:    {primary:'#1b2f5e', primary_dark:'#0a1633', accent:'#b98a2f', paper_top:'#FCFDFF', paper_bottom:'#E3E8F2', text:'#16203a'},
+  rose:    {primary:'#9c2f55', primary_dark:'#55132d', accent:'#b98a2f', paper_top:'#FFFBFC', paper_bottom:'#F5DDE3', text:'#3a1824'}
+};
+const MON = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const ymd = s => String(s || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
 
-const esc = (s) =>
-  String(s ?? '').replace(/[&<>"']/g, (c) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  }[c]));
-
-function formatLuxuryTime(t) {
-  if (!t) return '09:30 PM';
-  const str = String(t).trim();
-  if (str.includes('1899-') || str.includes('T')) {
-    const d = new Date(str);
-    if (!isNaN(d)) {
-      return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase();
-    }
-  }
-  return str.toUpperCase();
+function fmtTime(t) {
+  if (!t) return '';
+  const s = String(t).trim();
+  if (/T|1899-/.test(s)) { const d = new Date(s); if (!isNaN(d)) return d.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true}).toUpperCase(); }
+  return s.toUpperCase();
 }
-
-/**
- * Combines wedding.date ("yyyy-MM-dd" or ISO format) and wedding.time ("9:30 PM")
- * into a valid IST (+05:30) timestamp.
- */
-function parseWeddingDateTime(dateStr, timeStr) {
+function fmtDate(d) {
+  const m = ymd(d); if (!m) return String(d || '').toUpperCase();
+  return `${+m[3]} ${MON[+m[2] - 1]} ${m[1]}`;
+}
+function parseWhen(dateStr, timeStr) {
   const FALLBACK = new Date('2026-10-27T21:30:00+05:30').getTime();
-  if (!dateStr) return FALLBACK;
-
-  const dateMatch = String(dateStr).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!dateMatch) return FALLBACK;
-  const [, yyyy, mm, dd] = dateMatch;
-
-  let hh = 21, min = 30; // 09:30 PM default
-  const timeMatch = String(timeStr || '').trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
-  if (timeMatch) {
-    let h = parseInt(timeMatch[1], 10);
-    const m = parseInt(timeMatch[2], 10);
-    const ap = (timeMatch[3] || '').toUpperCase();
-    if (ap === 'PM' && h !== 12) h += 12;
-    if (ap === 'AM' && h === 12) h = 0;
-    hh = h; min = m;
-  }
-
-  const iso = `${yyyy}-${mm}-${dd}T${String(hh).padStart(2, '0')}:${String(min).padStart(2, '0')}:00+05:30`;
-  const ts = new Date(iso).getTime();
+  const m = ymd(dateStr); if (!m) { const p = Date.parse(`${dateStr} ${timeStr || ''}`); return isNaN(p) ? FALLBACK : p; }
+  let hh = 21, mi = 30;
+  const t = String(timeStr || '').trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
+  if (t) { hh = +t[1]; mi = +t[2]; const ap = (t[3] || '').toUpperCase(); if (ap === 'PM' && hh !== 12) hh += 12; if (ap === 'AM' && hh === 12) hh = 0; }
+  const ts = new Date(`${m[1]}-${m[2]}-${m[3]}T${String(hh).padStart(2,'0')}:${String(mi).padStart(2,'0')}:00+05:30`).getTime();
   return isNaN(ts) ? FALLBACK : ts;
 }
-
-function ordinalSuffix(n) {
-  const j = n % 10, k = n % 100;
-  if (j === 1 && k !== 11) return 'st';
-  if (j === 2 && k !== 12) return 'nd';
-  if (j === 3 && k !== 13) return 'rd';
-  return 'th';
+function saveTheDate(dateStr) {
+  const m = ymd(dateStr); if (!m) return {wd:'TUESDAY', day:27, sf:'th', mon:'OCTOBER', yr:'2026'};
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])), n = d.getUTCDate(), k = n % 100, j = n % 10;
+  return {wd: d.toLocaleDateString('en-IN', {weekday:'long', timeZone:'UTC'}).toUpperCase(), day:n,
+    sf: (j === 1 && k !== 11) ? 'st' : (j === 2 && k !== 12) ? 'nd' : (j === 3 && k !== 13) ? 'rd' : 'th',
+    mon: d.toLocaleDateString('en-IN', {month:'long', timeZone:'UTC'}).toUpperCase(), yr: String(d.getUTCFullYear())};
 }
 
-function buildSaveTheDate(dateStr) {
-  const FALLBACK = { weekday: 'TUESDAY', day: '27', suffix: 'th', month: 'OCTOBER', year: '2026' };
-  const m = String(dateStr || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!m) return FALLBACK;
-  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
-  if (isNaN(d.getTime())) return FALLBACK;
-  const day = d.getUTCDate();
-  return {
-    weekday: d.toLocaleDateString('en-IN', { weekday: 'long', timeZone: 'UTC' }).toUpperCase(),
-    day: String(day),
-    suffix: ordinalSuffix(day),
-    month: d.toLocaleDateString('en-IN', { month: 'long', timeZone: 'UTC' }).toUpperCase(),
-    year: String(d.getUTCFullYear())
-  };
+// Laurel medallion crest (replaces the old "eyebrow" leaves)
+function crest(ini, h = 6.4) {
+  const leaf = (th, mir) => { const a = mir ? 180 - th : th, r = 37, x = 100 + r * Math.cos(a * Math.PI / 180), y = 48 - r * Math.sin(a * Math.PI / 180);
+    const rot = -(a + 90) + (mir ? -28 : 28); return `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="7.5" ry="2.8" transform="rotate(${rot.toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`; };
+  const L = [112,138,164,190,216,242].map(t => leaf(t, 0)).join(''), R = [112,138,164,190,216,242].map(t => leaf(t, 1)).join('');
+  return `<svg viewBox="0 0 200 98" style="height:${h}em;width:auto;display:block;margin:0 auto" aria-hidden="true">
+   <g fill="var(--ox)" opacity=".88">${L}${R}</g>
+   <path d="M100 8l4 5-4 5-4-5z" fill="var(--gold)"/><path d="M100 80l3 4-3 4-3-4z" fill="var(--gold)"/>
+   <circle cx="100" cy="48" r="27" fill="#fffaf0" stroke="var(--ox)" stroke-width="1.8"/><circle cx="100" cy="48" r="23.5" fill="none" stroke="var(--gold)" stroke-width="1"/>
+   <text x="100" y="57" text-anchor="middle" font-family="'Playfair Display',serif" font-size="25" font-weight="700" fill="var(--ox)">${esc(ini)}</text></svg>`;
 }
-
-function formatLuxuryDate(d) {
-  if (!d) return '27 OCTOBER 2026';
-  const str = String(d).trim();
-  if (str.includes('T')) {
-    const dt = new Date(str);
-    if (!isNaN(dt)) {
-      const day = dt.getDate();
-      const month = dt.toLocaleString('en-IN', { month: 'short' }).toUpperCase();
-      const year = dt.getFullYear();
-      return `${day} ${month} ${year}`;
-    }
-    return str.split('T')[0];
-  }
-  return str.toUpperCase();
-}
-
-// ============================================================================
-// RENDER FUNCTION
-// ============================================================================
+const fl = (w = 12) => `<svg viewBox="0 0 160 16" style="width:${w}em;height:${w / 10}em;display:block;margin:0 auto" aria-hidden="true"><use href="#fl"/></svg>`;
 
 export default function render({ guest, wedding: w, events = [] }) {
-  const bride = esc(w.bride_name || 'Tarana');
-  const groom = esc(w.groom_name || 'Akbar');
-  const brideFull = esc(w.bride_full || 'Dr. Tarana Khatoon');
-  const groomFull = esc(w.groom_full || 'Md Akbar Ansari');
-  const guestName = esc(guest?.name || 'Respected Guest');
-  const persons = guest?.persons || 1;
-  const isFamily = guest?.with_family ? '✓' : '—';
-  const initials = `${(bride[0] || 'T')}${(groom[0] || 'A')}`.toUpperCase();
-
-  // Theme Colors from Themes Sheet with fallback
-  const theme = w.theme_colors || {
-    primary: '#6f0f1c',
-    primary_dark: '#460611',
-    accent: '#b98a2f',
-    paper_top: '#FFFDF8',
-    paper_bottom: '#F2DFBF',
-    text: '#3b1a1f'
-  };
-
-  const ceremonyTitle = esc(w.ceremony_title || 'Marriage Ceremony');
-  const venueTitle = esc(w.venue_title || 'Banquet Venue');
-
-  const hasCustomMessage = !!(w.message && String(w.message).trim());
-  const welcomeMessageHtml = hasCustomMessage
-    ? esc(w.message)
-    : `With immense joy, we invite you to celebrate the wedding union of
-       <span style="font-family:'Great Vibes',cursive; font-size:32px; color:var(--oxblood); display:inline-block; margin-top:2px;">${bride} &amp; ${groom}</span>.`;
-
-  const audioSrc = esc(w.music_url || 'invitation.mp3');
-  const saveDate = buildSaveTheDate(w.date);
-
-  return `
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-
-  <style>
-    :root {
-      --oxblood: ${esc(theme.primary)};
-      --oxblood-deep: ${esc(theme.primary_dark)};
-      --gold-24k: ${esc(theme.accent)};
-      --gold-light: #f4d896;
-      --gold-line: rgba(185, 138, 47, 0.45);
-      --parchment-base: #fdf8ed;
-      --parchment-shade: #f4e4c5;
-      --paper-top: ${esc(theme.paper_top)};
-      --paper-bottom: ${esc(theme.paper_bottom)};
-      --ink-text: ${esc(theme.text)};
-    }
-
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    .royal-universe {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(circle at 50% 20%, var(--oxblood-deep) 0%, #160105 60%, #0a0002 100%);
-    }
-
-    .royal-universe::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image: 
-        radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.12) 0%, transparent 65%),
-        url("data:image/svg+xml,%3Csvg width='50' height='50' viewBox='0 0 50 50' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M25 0l25 25-25 25L0 25z' fill='none' stroke='%23d4af37' stroke-opacity='0.035'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .royal-viewport-box {
-      position: relative;
-      width: 100%;
-      max-width: 425px;
-      height: 100%;
-      max-height: 100dvh;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: max(6px, env(safe-area-inset-top)) 6px max(8px, env(safe-area-inset-bottom));
-    }
-
-    .screen-panel {
-      position: absolute;
-      inset: max(6px, env(safe-area-inset-top)) 6px max(8px, env(safe-area-inset-bottom));
-      border-radius: min(44vw, 190px) min(44vw, 190px) 24px 24px;
-      background: linear-gradient(180deg, var(--paper-top) 0%, var(--paper-top) 48%, var(--paper-bottom) 100%);
-      box-shadow: 
-        0 20px 60px rgba(0, 0, 0, 0.8),
-        0 0 35px rgba(185, 138, 47, 0.2),
-        inset 0 0 35px rgba(212, 175, 55, 0.12);
-      border: 3px solid #dfc384;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      text-align: center;
-      padding: 24px 18px 16px;
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(0.96) translateY(12px);
-      filter: blur(8px);
-      transition: 
-        opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-        transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-        filter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 5;
-    }
-
-    .screen-panel::before {
-      content: "";
-      position: absolute;
-      inset: 6px;
-      border: 2px solid #b78a2f;
-      border-radius: inherit;
-      box-shadow: 
-        inset 0 0 0 4px #faf0dc,
-        inset 0 0 0 6px #cfab55,
-        0 0 0 2px #fff6e0;
-      pointer-events: none;
-    }
-
-    .screen-panel::after {
-      content: "";
-      position: absolute;
-      inset: 16px;
-      border: 1px dashed rgba(183, 138, 47, 0.45);
-      border-radius: inherit;
-      pointer-events: none;
-    }
-
-    .screen-panel.is-active {
-      opacity: 1;
-      pointer-events: auto;
-      transform: scale(1) translateY(0);
-      filter: blur(0);
-      z-index: 20;
-    }
-
-    .screen-panel.is-exiting {
-      opacity: 0;
-      transform: scale(1.03) translateY(-10px);
-      filter: blur(6px);
-      pointer-events: none;
-    }
-
-    /* Floating Music Knob */
-    .audio-knob {
-      position: fixed;
-      top: max(14px, env(safe-area-inset-top));
-      right: max(14px, env(safe-area-inset-right));
-      z-index: 1000;
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: rgba(43, 3, 11, 0.9);
-      border: 1.5px solid var(--gold-24k);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-    .audio-knob svg { width: 18px; height: 18px; fill: var(--gold-light); }
-    .audio-knob.spinning svg { animation: spinKnob 5s linear infinite; }
-    @keyframes spinKnob { 100% { transform: rotate(360deg); } }
-
-    /* Button */
-    .palace-btn {
-      width: 100%;
-      max-width: 270px;
-      min-height: 44px;
-      background: linear-gradient(135deg, var(--oxblood) 0%, var(--oxblood-deep) 100%);
-      border: 1.5px solid var(--gold-24k);
-      border-radius: 999px;
-      color: var(--gold-light);
-      font-family: 'Cinzel', serif;
-      font-size: 10.5px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      box-shadow: 0 8px 20px rgba(70, 6, 17, 0.45);
-      transition: transform 0.2s ease;
-      flex-shrink: 0;
-    }
-    .palace-btn:active { transform: scale(0.96); }
-    .palace-btn svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; }
-
-    /* Stepper Dots */
-    .stepper-dots {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 2px;
-    }
-    .step-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: rgba(183, 138, 47, 0.3);
-      transition: width 0.3s ease, background 0.3s ease;
-    }
-    .step-dot.active {
-      width: 18px;
-      border-radius: 4px;
-      background: var(--gold-24k);
-    }
-
-    /* Typography & Layout Elements */
-    .crest-ornament-wrap { width: 150px; height: 54px; margin: 0 auto; }
-    .main-invitation-title {
-      font-family: 'Cinzel', serif;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      color: var(--oxblood);
-      text-transform: uppercase;
-      margin: 2px 0 0;
-    }
-    .floret-bar-center { width: 180px; height: 12px; margin: 2px auto 4px; }
-
-    .save-the-date-deck {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin: 2px 0 6px;
-    }
-    .date-label-cell {
-      font-family: 'Cinzel', serif;
-      font-size: 9.5px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--ink-text);
-      line-height: 1.25;
-    }
-    .vertical-sep-gold {
-      width: 1.5px;
-      height: 30px;
-      background: var(--gold-24k);
-      opacity: 0.8;
-    }
-    .date-num-large {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 38px;
-      font-style: italic;
-      font-weight: 700;
-      color: var(--oxblood);
-      line-height: 1;
-    }
-
-    .couple-layout-container {
-      margin: 4px 0 6px;
-      display: flex;
-      align-items: baseline;
-      justify-content: center;
-      gap: 8px;
-    }
-    .name-bride, .name-groom {
-      font-family: 'Great Vibes', cursive;
-      font-size: 44px;
-      color: var(--oxblood);
-      line-height: 1;
-    }
-    .name-weds {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-style: italic;
-      font-size: 21px;
-      color: var(--oxblood);
-      font-weight: 600;
-      transform: translateY(-4px);
-    }
-
-    .to-guest-field {
-      width: 90%;
-      margin: 6px auto;
-      position: relative;
-      text-align: left;
-    }
-    .to-label {
-      font-family: 'Great Vibes', cursive;
-      font-size: 26px;
-      color: var(--oxblood);
-      display: inline-block;
-      vertical-align: bottom;
-    }
-    .guest-name-cursive {
-      font-family: 'Great Vibes', cursive;
-      font-size: 32px;
-      color: var(--oxblood);
-      display: inline-block;
-      text-align: center;
-      width: calc(100% - 40px);
-      line-height: 1;
-      transform: translateY(2px);
-    }
-    .solid-baseline-bar {
-      width: 100%;
-      height: 1.5px;
-      background: var(--oxblood);
-      opacity: 0.9;
-      margin-top: 2px;
-    }
-    .guide-subline-bar {
-      width: 100%;
-      height: 0.8px;
-      background: var(--oxblood);
-      opacity: 0.4;
-      margin-top: 4px;
-    }
-
-    .manifest-flourish-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin: 8px auto;
-      width: 92%;
-    }
-    .vine-branch-svg { width: 26px; height: 26px; flex-shrink: 0; }
-    .person-box-unit, .family-box-unit { text-align: center; }
-    .box-header-script {
-      font-family: 'Great Vibes', cursive;
-      font-size: 21px;
-      color: var(--oxblood);
-      line-height: 1;
-      margin-bottom: 2px;
-    }
-    .metric-square-box {
-      border: 1.5px solid var(--oxblood);
-      background: rgba(255, 255, 255, 0.8);
-      width: 74px;
-      height: 26px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--oxblood);
-    }
-    .vertical-manifest-divider {
-      width: 1px;
-      height: 38px;
-      background: rgba(111, 15, 28, 0.4);
-      margin: 0 4px;
-    }
-
-    .host-cordial-lead {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 14.5px;
-      color: var(--oxblood);
-      margin: 4px 0 2px;
-    }
-    .host-name-bold {
-      font-family: 'Playfair Display', serif;
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--oxblood);
-      line-height: 1.2;
-    }
-    .host-address-text {
-      font-size: 11.5px;
-      font-style: italic;
-      color: var(--ink-text);
-      line-height: 1.35;
-      margin: 2px 0;
-    }
-    .host-contact-text {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--ink-text);
-      margin: 2px 0;
-      letter-spacing: 0.3px;
-    }
-    .floret-tail-divider { width: 160px; height: 14px; margin: 4px auto 0; }
-
-    .event-leaf-stack {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      margin: 4px 0;
-    }
-    .event-leaf {
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid rgba(197, 155, 39, 0.4);
-      border-left: 3px solid var(--gold-24k);
-      border-radius: 6px;
-      padding: 5px 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      text-align: left;
-    }
-
-    /* Live Real-Time Countdown Deck */
-    .countdown-gold-deck {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin: 6px 0;
-      width: 100%;
-      max-width: 310px;
-    }
-    .count-pod {
-      flex: 1;
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid var(--gold-24k);
-      border-radius: 8px;
-      padding: 6px 2px;
-      box-shadow: 0 4px 10px rgba(111, 15, 28, 0.08);
-      text-align: center;
-    }
-    .count-digits {
-      font-family: 'Cinzel', serif;
-      font-size: 19px;
-      font-weight: 800;
-      color: var(--oxblood);
-      line-height: 1;
-    }
-    .count-tag {
-      font-family: 'Cinzel', serif;
-      font-size: 7.5px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: #8b6818;
-      font-weight: 700;
-      margin-top: 2px;
-    }
-
-    .closing-buttons-list {
-      width: 100%;
-      max-width: 290px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .pill-action {
-      padding: 8px 14px;
-      border-radius: 30px;
-      font-family: 'Cinzel', serif;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .pill-oxblood { background: var(--oxblood); color: #fff !important; border: 1px solid var(--gold-24k); }
-    .pill-gold { background: linear-gradient(135deg, #ECC880, #C59B27); color: #32030B !important; border: 1px solid #AA8022; }
-    .pill-surprise { background: #fff; color: var(--oxblood) !important; border: 1px dashed var(--gold-24k); cursor: pointer; }
-
-    /* Scratch Modal */
-    .scratch-stage-modal {
-      position: absolute;
-      inset: 0;
-      z-index: 100;
-      background: rgba(20, 2, 5, 0.88);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.35s ease;
-    }
-    .scratch-stage-modal.is-open { opacity: 1; pointer-events: auto; }
-    .scratch-pod {
-      width: min(88vw, 320px);
-      background: linear-gradient(180deg, #FFFDF8, #F5E9D0);
-      border: 2px solid var(--gold-24k);
-      border-radius: 18px;
-      padding: 20px 16px 16px;
-      text-align: center;
-    }
-  </style>
-
-  <!-- Reusable SVG Flourishes -->
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <defs>
-      <g id="vineBranch">
-        <path d="M12,24 C10,16 6,12 0,8 C8,10 14,7 18,0 C17,8 21,12 28,14 C20,15 15,19 12,24 Z" fill="var(--oxblood)"/>
-        <circle cx="2" cy="6" r="1.5" fill="var(--oxblood)"/>
-        <circle cx="20" cy="2" r="1.5" fill="var(--oxblood)"/>
-        <circle cx="26" cy="16" r="1.5" fill="var(--oxblood)"/>
-      </g>
-      <g id="flourishTail">
-        <line x1="10" y1="8" x2="68" y2="8" stroke="var(--oxblood)" stroke-width="1.2"/>
-        <line x1="92" y1="8" x2="150" y2="8" stroke="var(--oxblood)" stroke-width="1.2"/>
-        <circle cx="80" cy="8" r="3" fill="var(--oxblood)"/>
-        <circle cx="80" cy="3" r="1.6" fill="var(--oxblood)"/>
-        <circle cx="80" cy="13" r="1.6" fill="var(--oxblood)"/>
-        <circle cx="75" cy="8" r="1.6" fill="var(--oxblood)"/>
-        <circle cx="85" cy="8" r="1.6" fill="var(--oxblood)"/>
-        <circle cx="76.5" cy="4.5" r="1.4" fill="var(--oxblood)"/>
-        <circle cx="83.5" cy="4.5" r="1.4" fill="var(--oxblood)"/>
-        <circle cx="76.5" cy="11.5" r="1.4" fill="var(--oxblood)"/>
-        <circle cx="83.5" cy="11.5" r="1.4" fill="var(--oxblood)"/>
-      </g>
-    </defs>
-  </svg>
-
-  <div class="royal-universe">
-    
-    <!-- Audio Element (Play Once, No Loop) -->
-    <button class="audio-knob" id="audioToggle" aria-label="Toggle Music" type="button">
-      <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-      <audio id="royalAudio" preload="auto">
-        <source src="${audioSrc}" type="audio/mp3">
-      </audio>
-    </button>
-
-    <div class="royal-viewport-box">
-
-      <!-- ========================================================
-           SCREEN 0: ROYAL WELCOME
-           ======================================================== -->
-      <section class="screen-panel is-active" data-index="0" aria-label="Welcome">
-        <div class="stepper-dots">
-          <span class="step-dot active"></span><span class="step-dot"></span>
-          <span class="step-dot"></span><span class="step-dot"></span><span class="step-dot"></span>
-        </div>
-
-        <div>
-          <svg class="crest-ornament-wrap" viewBox="0 0 160 56">
-            <path d="M42,28 C28,18 16,24 4,32 C18,34 30,32 40,28 Z" fill="var(--oxblood)" opacity=".85"/>
-            <path d="M118,28 C132,18 144,24 156,32 C142,34 130,32 120,28 Z" fill="var(--oxblood)" opacity=".85"/>
-            <circle cx="80" cy="28" r="22" fill="none" stroke="var(--oxblood)" stroke-width="1.4"/>
-            <circle cx="80" cy="28" r="19" fill="none" stroke="var(--gold-24k)" stroke-width=".8"/>
-            <text x="80" y="36" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="21" font-weight="700" fill="var(--oxblood)">${initials}</text>
-            <circle cx="80" cy="4" r="2" fill="var(--gold-24k)"/>
-          </svg>
-          <div style="font-family:'Cinzel',serif; font-size:9.5px; letter-spacing:2px; color:var(--oxblood); font-weight:700;">Imperial Matrimony</div>
-        </div>
-
-        <div>
-          <h1 style="font-family:'Great Vibes',cursive; font-size:clamp(54px, 16vw, 68px); color:var(--oxblood); margin:2px 0; line-height:1;">Welcome</h1>
-          <svg style="width:160px; height:14px; margin:2px auto;"><use href="#flourishTail"/></svg>
-
-          <div style="font-family:'Cormorant Garamond', serif; font-size:24px; font-style:italic; color:var(--oxblood); margin:8px 0;">
-            Dear <strong>${guestName}</strong>
-          </div>
-
-          <p style="font-style:italic; font-size:15px; line-height:1.45; color:var(--ink-text); max-width:88%; margin:6px auto 0;">
-            ${welcomeMessageHtml}
-          </p>
-        </div>
-
-        <button class="palace-btn" type="button" data-next="1">
-          <span>Open Invitation</span>
-          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-      </section>
-
-      <!-- ========================================================
-           SCREEN 1: SAVE THE DATE / VIP PASS
-           ======================================================== -->
-      <section class="screen-panel" data-index="1" aria-label="Save The Date">
-        <div class="stepper-dots">
-          <span class="step-dot"></span><span class="step-dot active"></span>
-          <span class="step-dot"></span><span class="step-dot"></span><span class="step-dot"></span>
-        </div>
-
-        <div>
-          <svg class="crest-ornament-wrap" viewBox="0 0 160 56">
-            <path d="M42,28 C28,18 16,24 4,32 C18,34 30,32 40,28 Z" fill="var(--oxblood)" opacity=".85"/>
-            <path d="M118,28 C132,18 144,24 156,32 C142,34 130,32 120,28 Z" fill="var(--oxblood)" opacity=".85"/>
-            <circle cx="80" cy="28" r="22" fill="none" stroke="var(--oxblood)" stroke-width="1.4"/>
-            <circle cx="80" cy="28" r="19" fill="none" stroke="var(--gold-24k)" stroke-width=".8"/>
-            <text x="80" y="36" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="21" font-weight="700" fill="var(--oxblood)">${initials}</text>
-            <circle cx="80" cy="52" r="2" fill="var(--oxblood)"/>
-          </svg>
-
-          <h2 class="main-invitation-title">Wedding Invitation</h2>
-          <svg class="floret-bar-center" viewBox="0 0 160 14"><use href="#flourishTail"/></svg>
-
-          <div class="save-the-date-deck">
-            <div class="date-label-cell" style="text-align:right;">SAVE THE DATE<br>${saveDate.weekday}</div>
-            <div class="vertical-sep-gold"></div>
-            <div class="date-num-large">${saveDate.day}${saveDate.suffix}</div>
-            <div class="vertical-sep-gold"></div>
-            <div class="date-label-cell" style="text-align:left;">${saveDate.month}<br>${saveDate.year}</div>
-          </div>
-        </div>
-
-        <div>
-          <div class="couple-layout-container">
-            <span class="name-bride">${bride}</span>
-            <span class="name-weds">weds</span>
-            <span class="name-groom">${groom}</span>
-          </div>
-
-          <div class="to-guest-field">
-            <div>
-              <span class="to-label">To</span>
-              <span class="guest-name-cursive">${guestName}</span>
-            </div>
-            <div class="solid-baseline-bar"></div>
-            <div class="guide-subline-bar"></div>
-          </div>
-
-          <div class="manifest-flourish-row">
-            <svg class="vine-branch-svg" viewBox="0 0 28 24"><use href="#vineBranch"/></svg>
-
-            <div class="person-box-unit">
-              <div class="box-header-script">Person</div>
-              <div class="metric-square-box">${persons}</div>
-            </div>
-
-            <div class="vertical-manifest-divider"></div>
-
-            <div class="family-box-unit">
-              <div class="box-header-script">Family</div>
-              <div class="metric-square-box">${isFamily}</div>
-            </div>
-
-            <svg class="vine-branch-svg" viewBox="0 0 28 24" style="transform: scaleX(-1);"><use href="#vineBranch"/></svg>
-          </div>
-        </div>
-
-        <div>
-          <div class="host-cordial-lead">A Cordial Invitation</div>
-          <div class="host-name-bold">${esc(w.host_name || 'Mrs. & Mr. Md Kalim Khan')}</div>
-          <div class="host-address-text">${esc(w.address || '283/10 Belilious Road, Howrah, West Bengal – 711101')}</div>
-          <div class="host-contact-text">M.: ${esc(w.rsvp_contacts || '9330981386, +917033098070')}</div>
-          <svg class="floret-tail-divider" viewBox="0 0 160 14"><use href="#flourishTail"/></svg>
-        </div>
-
-        <button class="palace-btn" type="button" data-next="2">
-          <span>The Ceremony</span>
-          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-      </section>
-
-      <!-- ========================================================
-           SCREEN 2: CEREMONY FARMAN
-           ======================================================== -->
-      <section class="screen-panel" data-index="2" aria-label="Ceremony">
-        <div class="stepper-dots">
-          <span class="step-dot"></span><span class="step-dot"></span>
-          <span class="step-dot active"></span><span class="step-dot"></span><span class="step-dot"></span>
-        </div>
-
-        <div>
-          <div style="font-style:italic; font-size:12px; color:var(--ink-text);">
-            ${esc(w.invocation || 'In the name of Allah the most beneficent & merciful')}
-          </div>
-          <svg style="width:140px; height:12px; margin:2px auto;"><use href="#flourishTail"/></svg>
-          <div style="font-family:'Cinzel',serif; font-size:14px; letter-spacing:3px; color:var(--oxblood); font-weight:700;">${ceremonyTitle}</div>
-        </div>
-
-        <div>
-          <div style="font-size:12px; font-style:italic;">has great pleasure to invite you to attend the wedding of their daughter</div>
-          
-          <div style="font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:700; color:var(--oxblood); margin-top:4px;">
-            ${brideFull}
-          </div>
-          <div style="font-size:10.5px; opacity:0.85;">${esc(w.bride_parents || '(D/o Mrs. & Mr. Md Kalim Khan, Howrah)')}</div>
-
-          <div style="font-family:'Great Vibes',cursive; font-size:32px; color:var(--oxblood); margin:2px 0;">Weds</div>
-
-          <div style="font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:700; color:var(--oxblood);">
-            ${groomFull}
-          </div>
-          <div style="font-size:10.5px; opacity:0.85;">${esc(w.groom_parents || '(S/o Mrs. & Mr. Moin Siddique, Ramgarh)')}</div>
-        </div>
-
-        <div style="border-top:1px solid rgba(183,138,47,0.4); width:90%; padding-top:4px;">
-          <div style="font-family:'Cinzel',serif; font-size:7.5px; color:var(--oxblood); font-weight:700;">With Best Compliments From</div>
-          <div style="font-size:14px; font-weight:700; color:var(--oxblood);">${esc(w.compliments || 'Kalim Fish Seed')}</div>
-          <div style="font-size:9.5px; opacity:0.85; margin-top:2px;">R.S.V.P: ${esc(w.rsvp_contacts || 'Md Kalim Khan 9330981386')}</div>
-        </div>
-
-        <button class="palace-btn" type="button" data-next="3">
-          <span>View Programme</span>
-          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-      </section>
-
-      <!-- ========================================================
-           SCREEN 3: WEDDING PROGRAMME
-           ======================================================== -->
-      <section class="screen-panel" data-index="3" aria-label="Programme">
-        <div class="stepper-dots">
-          <span class="step-dot"></span><span class="step-dot"></span>
-          <span class="step-dot"></span><span class="step-dot active"></span><span class="step-dot"></span>
-        </div>
-
-        <div>
-          <div style="font-style:italic; font-size:11.5px; color:var(--ink-text);">Insha Allah, to be solemnised as per the programme</div>
-          <div style="font-family:'Cinzel',serif; font-size:13px; letter-spacing:2.5px; color:var(--oxblood); font-weight:700; margin-top:2px;">Wedding Programme</div>
-        </div>
-
-        <div class="event-leaf-stack">
-          ${events && events.length ? events.map(ev => `
-            <div class="event-leaf">
-              <div>
-                <strong style="color:var(--oxblood); font-size:12.5px;">${esc(ev.event_name)}</strong>
-                <div style="font-size:9.5px; opacity:0.8;">${formatLuxuryDate(ev.event_date)}${ev.note ? '• ' + esc(ev.note) : ''}</div>
-              </div>
-              <span style="font-family:'Cinzel',serif; font-size:9px; color:#8b6818; font-weight:700;">${formatLuxuryTime(ev.event_time)}</span>
-            </div>
-          `).join('') : `
-            <div class="event-leaf">
-              <div>
-                <strong style="color:var(--oxblood); font-size:12.5px;">Milaad Sharif</strong>
-                <div style="font-size:9.5px; opacity:0.8;">24 OCT 2026 (Baad Namaz-e-Isha)</div>
-              </div>
-              <span style="font-family:'Cinzel',serif; font-size:9px; font-weight:700;">09:00 PM</span>
-            </div>
-            <div class="event-leaf">
-              <div>
-                <strong style="color:var(--oxblood); font-size:12.5px;">Rasm-e-Haldi &amp; Mehndi</strong>
-                <div style="font-size:9.5px; opacity:0.8;">25 &amp; 26 OCT 2026</div>
-              </div>
-              <span style="font-family:'Cinzel',serif; font-size:9px; font-weight:700;">06:00 PM</span>
-            </div>
-            <div class="event-leaf">
-              <div>
-                <strong style="color:var(--oxblood); font-size:12.5px;">Baraat, Nikah &amp; Banquet</strong>
-                <div style="font-size:9.5px; opacity:0.8;">Tuesday 27 OCT 2026</div>
-              </div>
-              <span style="font-family:'Cinzel',serif; font-size:9px; font-weight:700;">08:00 PM</span>
-            </div>
-            <div class="event-leaf">
-              <div>
-                <strong style="color:var(--oxblood); font-size:12.5px;">Rukhsati</strong>
-                <div style="font-size:9.5px; opacity:0.8;">Wednesday 28 OCT 2026</div>
-              </div>
-              <span style="font-family:'Cinzel',serif; font-size:9px; font-weight:700;">08:00 AM</span>
-            </div>
-          `}
-        </div>
-
-        <div>
-          <div style="font-family:'Cinzel',serif; font-size:8px; color:var(--oxblood); font-weight:700;">${venueTitle}</div>
-          <div style="font-size:14px; font-weight:700; color:var(--oxblood);">${esc(w.venue || 'Shuubh Arambh Banquet')}</div>
-          <div style="font-size:10px; opacity:0.85;">${esc(w.address || '131, Belilious Rd, Tikiapara, Howrah')}</div>
-        </div>
-
-        <button class="palace-btn" type="button" data-next="4">
-          <span>Closing Heirloom</span>
-          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-      </section>
-
-      <!-- ========================================================
-           SCREEN 4: CLOSING & COUNTDOWN TIMER & CONCIERGE
-           ======================================================== -->
-      <section class="screen-panel" data-index="4" aria-label="Closing">
-        <div class="stepper-dots">
-          <span class="step-dot"></span><span class="step-dot"></span>
-          <span class="step-dot"></span><span class="step-dot"></span><span class="step-dot active"></span>
-        </div>
-
-        <div>
-          <svg class="crest-ornament-wrap" viewBox="0 0 160 56" style="height:40px;">
-            <circle cx="80" cy="28" r="22" fill="none" stroke="var(--oxblood)" stroke-width="1.3"/>
-            <text x="80" y="36" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="20" font-weight="700" fill="var(--oxblood)">${initials}</text>
-          </svg>
-          <div style="font-family:'Great Vibes',cursive; font-size:38px; color:var(--oxblood); line-height:1; margin:2px 0;">
-            With Love &amp; Warmest Regards
-          </div>
-          <div style="font-size:16px; font-weight:700; color:var(--oxblood);">
-            ${esc(w.footer_text || 'Md Kalim Khan & Family')}
-          </div>
-        </div>
-
-        <!-- DYNAMIC REAL-TIME COUNTDOWN TIMER -->
-        <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
-          <div style="font-family:'Cinzel',serif; font-size:8.5px; letter-spacing:2px; text-transform:uppercase; color:#8b6818; font-weight:700; margin-bottom:4px;">
-            ✦ The Auspicious Moment Arrives In ✦
-          </div>
-          <div class="countdown-gold-deck" id="weddingCountdown">
-            <div class="count-pod">
-              <div class="count-digits" id="cdDays">00</div>
-              <div class="count-tag">Days</div>
-            </div>
-            <div class="count-pod">
-              <div class="count-digits" id="cdHours">00</div>
-              <div class="count-tag">Hours</div>
-            </div>
-            <div class="count-pod">
-              <div class="count-digits" id="cdMins">00</div>
-              <div class="count-tag">Mins</div>
-            </div>
-            <div class="count-pod">
-              <div class="count-digits" id="cdSecs">00</div>
-              <div class="count-tag">Secs</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Luxury Action Concierge -->
-        <div class="closing-buttons-list">
-          ${w.map_url ? `
-            <a href="${esc(w.map_url)}" target="_blank" rel="noopener noreferrer" class="pill-action pill-gold">
-              <span>📍 View Venue Location</span>
-            </a>
-          ` : ''}
-
-          <a href="#" id="saveCalBtn" target="_blank" rel="noopener noreferrer" class="pill-action pill-oxblood">
-            <span>📅 Save Date To Calendar</span>
-          </a>
-
-          <a href="#" id="waRsvpBtn" target="_blank" rel="noopener noreferrer" class="pill-action pill-gold">
-            <span>💬 Confirm RSVP via WhatsApp</span>
-          </a>
-
-          <button type="button" id="triggerScratch" class="pill-action pill-surprise">
-            <span>✨ One Little Surprise (Scratch)</span>
-          </button>
-        </div>
-
-        <button class="palace-btn" type="button" data-next="0" style="min-height:34px; max-width:180px; font-size:9px;">
-          <span>Return To Opening</span>
-        </button>
-      </section>
-
-    </div>
-
-    <!-- Gold Scratch Foil Modal -->
-    <div class="scratch-stage-modal" id="scratchModal">
-      <div class="scratch-pod">
-        <div style="font-family:'Cinzel',serif; font-size:9.5px; color:var(--gold-deep); font-weight:700;">Royal Token</div>
-        <div style="font-size:15px; font-weight:700; color:var(--oxblood); margin-top:2px;">A Warm Sentiment</div>
-        
-        <div style="position:relative; width:260px; height:120px; margin:12px auto; border-radius:10px; overflow:hidden; border:1.5px solid var(--gold-24k);">
-          <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#FFFDF8; padding:8px;">
-            <span style="font-size:20px;">🕊️</span>
-            <div style="font-size:13px; font-weight:700; color:var(--oxblood); margin-top:3px;">"Your Presence Is Our Greatest Blessing"</div>
-          </div>
-          <canvas id="scratchCanvas" width="260" height="120" style="position:absolute; inset:0; touch-action:none;"></canvas>
-        </div>
-
-        <button type="button" id="closeScratch" style="background:none; border:none; font-family:'Cinzel',serif; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:var(--oxblood); cursor:pointer; text-decoration:underline;">
-          Close Card
-        </button>
-      </div>
-    </div>
-
-  </div>
-  `;
+  const rawB = String(w.bride_name || 'Bride').trim(), rawG = String(w.groom_name || 'Groom').trim();
+  const bride = esc(rawB), groom = esc(rawG), ini = (rawB[0] + rawG[0]).toUpperCase();
+  const brideFull = esc(w.bride_full || rawB), groomFull = esc(w.groom_full || rawG);
+  const gName = esc(guest?.name || 'Respected Guest'), persons = esc(guest?.persons || 1), fam = guest?.with_family ? '✓' : '—';
+  const th = (w.theme_colors && typeof w.theme_colors === 'object') ? {...THEMES.maroon, ...w.theme_colors} : (THEMES[String(w.theme || '').toLowerCase()] || THEMES.maroon);
+  const sd = saveTheDate(w.date), contacts = lines(w.rsvp_contacts), map = safeUrl(w.map_url);
+  const names = `<span class="sc" style="font-size:1.9em;white-space:nowrap">${bride}<span class="amp"> &amp; </span>${groom}</span>`;
+  const msg = (w.message && String(w.message).trim()) ? esc(w.message) : `With immense joy, we invite you to celebrate the wedding union of ${names}`;
+  const dots = i => `<div class="dots">${[0,1,2,3,4].map(k => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</div>`;
+  const next = (to, label) => `<button class="btn" type="button" data-next="${to}"><span>${label}</span><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>`;
+  const P = (i, inner, btn, cls = '') => `<section class="sp${i ? '' : ' on'}" data-index="${i}">${dots(i)}<div class="bd ${cls}">${inner}</div>${btn}</section>`;
+  const evs = (events.length ? events : []).map(e => `<div class="ev"><div><b>${esc(e.event_name)}</b><small>${esc(fmtDate(e.event_date))}${e.note ? ' · ' + esc(e.note) : ''}</small></div><span>${esc(fmtTime(e.event_time))}</span></div>`).join('');
+
+  return `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Great+Vibes&family=Lora:ital,wght@0,500;0,600;1,500&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ox:${esc(th.primary)};--ox2:${esc(th.primary_dark)};--gold:${esc(th.accent)};--gl:#f4d896;--pt:${esc(th.paper_top)};--pb:${esc(th.paper_bottom)};--ink:${esc(th.text)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.ru{position:absolute;inset:0;overflow:hidden;display:flex;justify-content:center;background:radial-gradient(circle at 50% 15%,var(--ox2),#120104 72%);font-family:'Lora',Georgia,serif;color:var(--ink)}
+.vp{position:relative;width:100%;max-width:430px;height:100%}
+.sp{position:absolute;inset:max(6px,env(safe-area-inset-top)) 6px max(8px,env(safe-area-inset-bottom));font-size:clamp(11px,min(2.2dvh,4.6vw),19px);line-height:1.4;
+ border-radius:min(44vw,190px) min(44vw,190px) 24px 24px;background:linear-gradient(180deg,var(--pt) 45%,var(--pb));border:3px solid #dfc384;
+ box-shadow:0 20px 60px rgba(0,0,0,.75),0 0 30px rgba(185,138,47,.2),inset 0 0 30px rgba(212,175,55,.12);display:flex;flex-direction:column;align-items:center;text-align:center;
+ padding:1.1em 1.5em 1.1em;visibility:hidden;opacity:0;transform:scale(.97) translateY(10px);transition:opacity .45s,transform .45s,visibility .45s}
+.sp.on{visibility:visible;opacity:1;transform:none;z-index:5}.sp.out{opacity:0;transform:scale(1.02) translateY(-8px)}
+.sp:before{content:"";position:absolute;inset:6px;border:2px solid #b78a2f;border-radius:inherit;box-shadow:inset 0 0 0 4px #faf0dc,inset 0 0 0 6px #cfab55;pointer-events:none}
+.sp:after{content:"";position:absolute;inset:16px;border:1px dashed rgba(183,138,47,.45);border-radius:inherit;pointer-events:none}
+.bd{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;overflow-y:auto;scrollbar-width:none;padding-top:.4em}.bd::-webkit-scrollbar{display:none}
+.bd.t{padding-top:2.2em}
+.dots{display:flex;gap:.4em;margin:.2em 0 .3em;flex-shrink:0}.dots i{width:.45em;height:.45em;border-radius:50%;background:rgba(183,138,47,.3);transition:.3s}.dots i.on{width:1.6em;border-radius:.3em;background:var(--gold)}
+.cap{font-family:'Cinzel',serif;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ox)}
+.sc{font-family:'Great Vibes',cursive;color:var(--ox);line-height:1.1;font-weight:400}.amp{font-family:'Lora',serif;font-size:.5em;font-style:italic;vertical-align:middle}
+.nm{font-family:'Playfair Display',serif;font-weight:700;color:var(--ox);line-height:1.2}
+.tx{font-weight:500;line-height:1.5}.it{font-style:italic}small{display:block;font-size:.86em;opacity:.85}
+.btn{flex-shrink:0;margin-top:.5em;width:100%;max-width:19em;min-height:3em;border:1.5px solid var(--gold);border-radius:99px;background:linear-gradient(135deg,var(--ox),var(--ox2));color:var(--gl);font:700 .78em 'Cinzel',serif;letter-spacing:.16em;text-transform:uppercase;display:inline-flex;align-items:center;justify-content:center;gap:.7em;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+.btn:active{transform:scale(.97)}.btn svg{width:1.1em;height:1.1em;fill:none;stroke:currentColor;stroke-width:2}
+.deck{display:flex;align-items:center;justify-content:center;gap:.8em}.deck .l{font:700 .78em/1.35 'Cinzel',serif;letter-spacing:.08em;color:var(--ink)}.deck .v{width:1.5px;height:2.6em;background:var(--gold)}
+.deck .n{font:italic 700 3em/1 'Playfair Display',serif;color:var(--ox)}
+.cp{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:0 .3em}.cp .sc{font-size:2.9em}.cp .w{font:italic 600 1.3em 'Lora',serif;color:var(--ox)}
+.to{width:92%;display:flex;align-items:baseline;gap:.4em;border-bottom:1.5px solid var(--ox);box-shadow:0 .25em 0 -.2em rgba(122,20,38,.35)}.to .sc{font-size:1.7em}.to .g{flex:1;font-size:2em}
+.mf{display:flex;align-items:center;justify-content:center;gap:.9em}.mf .sc{font-size:1.5em}.box{border:1.5px solid var(--ox);background:rgba(255,255,255,.8);width:5.4em;height:2em;display:flex;align-items:center;justify-content:center;font:700 1.2em 'Playfair Display',serif;color:var(--ox)}
+.mf .d{width:1px;height:3em;background:rgba(122,20,38,.35)}.spark{width:1.8em;height:1.8em;fill:var(--ox)}
+.ev{display:flex;justify-content:space-between;align-items:center;gap:.6em;text-align:left;width:100%;background:rgba(255,255,255,.85);border:1px solid rgba(185,138,47,.4);border-left:3px solid var(--gold);border-radius:.5em;padding:.45em .8em}
+.ev b{color:var(--ox);font-size:1.05em}.ev span{font:700 .78em 'Cinzel',serif;color:#8b6818;white-space:nowrap}.evs{width:100%;display:flex;flex-direction:column;gap:.4em}
+.cd{display:flex;gap:.6em;width:100%;max-width:22em}.cd div{flex:1;background:rgba(255,255,255,.88);border:1px solid var(--gold);border-radius:.6em;padding:.5em 0}.cd b{display:block;font:800 1.6em/1 'Cinzel',serif;color:var(--ox)}.cd small{font:700 .6em 'Cinzel',serif;letter-spacing:.1em;color:#8b6818;margin-top:.2em}
+.pills{width:100%;max-width:22em;display:flex;flex-direction:column;gap:.45em}.pill{padding:.75em 1em;border-radius:99px;font:700 .72em 'Cinzel',serif;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;text-align:center;border:1px solid var(--gold);cursor:pointer;display:block}
+.p1{background:var(--ox);color:#fff}.p2{background:linear-gradient(135deg,#ECC880,#C59B27);color:#32030B}.p3{background:#fff;color:var(--ox);border-style:dashed}
+.aud{position:fixed;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:50;width:42px;height:42px;border-radius:50%;background:rgba(43,3,11,.9);border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.aud svg{width:18px;height:18px;fill:var(--gl)}.aud.spin svg{animation:sp 5s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.sm{position:absolute;inset:0;z-index:60;background:rgba(20,2,5,.88);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}.sm.on{opacity:1;pointer-events:auto}
+.pod{width:min(88vw,320px);background:linear-gradient(#FFFDF8,#F5E9D0);border:2px solid var(--gold);border-radius:18px;padding:20px 16px;text-align:center}
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><g id="fl"><path d="M8 8h60M92 8h60" stroke="var(--ox)" stroke-width="1.2"/><path d="M80 2l4 6-4 6-4-6z" fill="var(--ox)"/><circle cx="71" cy="8" r="1.6" fill="var(--ox)"/><circle cx="89" cy="8" r="1.6" fill="var(--ox)"/></g>
+<g id="sp"><path d="M12 0l2.6 9.4L24 12l-9.4 2.6L12 24l-2.6-9.4L0 12l9.4-2.6z"/></g></defs></svg>
+<div class="ru">
+ <button class="aud" id="aud" type="button" aria-label="Music"><svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg><audio id="au" preload="auto"><source src="${esc(w.music_url || 'invitation.mp3')}" type="audio/mpeg"></audio></button>
+ <div class="vp">
+${P(0, `${crest(ini, 7.4)}<div class="cap" style="font-size:.8em">Walima &amp; Nikah Invitation</div>
+  <div><div class="sc" style="font-size:clamp(3.6em,22vw,4.8em)">Welcome</div>${fl(13)}</div>
+  <div class="nm it" style="font-size:1.7em;font-weight:600">Dear ${gName}${guest?.with_family ? ' &amp; Family' : ''}</div>
+  <p class="tx" style="font-size:1.12em;max-width:92%;margin:0">${msg}</p>`, next(1, 'Open Invitation'))}
+${P(1, `<div>${crest(ini, 4.6)}<div class="cap" style="font-size:1.1em;margin-top:.3em">Wedding Invitation</div>${fl(11)}</div>
+  <div class="deck"><div class="l" style="text-align:right">SAVE THE DATE<br>${sd.wd}</div><i class="v"></i><div class="n">${sd.day}${sd.sf}</div><i class="v"></i><div class="l" style="text-align:left">${sd.mon}<br>${sd.yr}</div></div>
+  <div class="cp"><span class="sc">${bride}</span><span class="w">weds</span><span class="sc">${groom}</span></div>
+  <div class="to"><span class="sc">To</span><span class="sc g">${gName}</span></div>
+  <div class="mf"><svg class="spark" viewBox="0 0 24 24"><use href="#sp"/></svg><div><div class="sc">Person</div><div class="box">${persons}</div></div><i class="d"></i><div><div class="sc">Family</div><div class="box">${fam}</div></div><svg class="spark" viewBox="0 0 24 24"><use href="#sp"/></svg></div>
+  <div><div class="it" style="font-size:1.05em">A Cordial Invitation</div><div class="nm" style="font-size:1.55em">${esc(w.host_name || '')}</div>
+   <div class="tx" style="font-size:1.02em">${esc(w.host_address || w.address || '')}</div>${contacts.map(c => `<div class="tx" style="font-weight:600;font-size:1.02em">${esc(c)}</div>`).join('')}</div>`, next(2, 'The Ceremony'))}
+${P(2, `<div><div class="it tx" style="font-size:1.02em;max-width:85%;margin:0 auto">${esc(w.invocation || 'In the name of Allah the most beneficent & merciful')}</div>${fl(10)}<div class="cap" style="font-size:1.25em">${esc(w.ceremony_title || 'Marriage Ceremony')}</div></div>
+  <div><div class="it tx" style="font-size:1.05em">has great pleasure to invite you to attend the wedding of their daughter</div>
+   <div class="nm" style="font-size:1.95em;margin-top:.2em">${brideFull}</div><small>${esc(w.bride_parents || '')}</small>
+   <div class="sc" style="font-size:2.6em">Weds</div>
+   <div class="nm" style="font-size:1.95em">${groomFull}</div><small>${esc(w.groom_parents || '')}</small></div>
+  <div style="border-top:1px solid rgba(183,138,47,.45);width:92%;padding-top:.6em"><div class="cap" style="font-size:.72em">With Best Compliments From</div>
+   <div class="nm" style="font-size:1.3em">${esc(w.compliments || '')}</div><div class="cap" style="font-size:.72em;margin-top:.5em">R.S.V.P.</div>${contacts.map(c => `<div class="tx" style="font-weight:600">${esc(c)}</div>`).join('')}</div>`, next(3, 'View Programme'), 't')}
+${P(3, `<div><div class="it tx">Insha Allah, to be solemnised as per the programme</div><div class="cap" style="font-size:1.2em;margin-top:.2em">Wedding Programme</div></div>
+  <div class="evs">${evs}</div>
+  <div><div class="cap" style="font-size:.78em">${esc(w.venue_title || 'Banquet Venue')}</div><div class="nm" style="font-size:1.4em">${esc(w.venue || '')}</div><div class="tx" style="font-size:.95em">${esc(w.address || '')}</div></div>`, next(4, 'Closing Heirloom'), 't')}
+${P(4, `<div>${crest(ini, 4.4)}<div class="sc" style="font-size:2.7em;margin-top:.1em">With Love &amp; Warmest Regards</div><div class="nm" style="font-size:1.35em">${esc(w.footer_text || '')}</div></div>
+  <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:.4em"><div class="cap" style="font-size:.72em;color:#8b6818">✦ The Auspicious Moment Arrives In ✦</div>
+   <div class="cd" id="cd"><div><b id="d">00</b><small>Days</small></div><div><b id="h">00</b><small>Hours</small></div><div><b id="m">00</b><small>Mins</small></div><div><b id="s">00</b><small>Secs</small></div></div></div>
+  <div class="pills">${map ? `<a class="pill p2" href="${map}" target="_blank" rel="noopener noreferrer">📍 View Venue Location</a>` : ''}
+   <a class="pill p1" id="cal" href="#" target="_blank" rel="noopener noreferrer">📅 Save Date To Calendar</a>
+   <a class="pill p2" id="wa" href="#" target="_blank" rel="noopener noreferrer">💬 Confirm RSVP on WhatsApp</a>
+   <button class="pill p3" id="sc" type="button">✨ One Little Surprise</button></div>`, next(0, 'Return To Opening'), 't')}
+ </div>
+ <div class="sm" id="sm"><div class="pod"><div class="cap" style="font-size:.7rem">Royal Token</div><div class="nm" style="font-size:1.1rem">A Warm Sentiment</div>
+  <div style="position:relative;width:260px;height:120px;margin:12px auto;border-radius:10px;overflow:hidden;border:1.5px solid var(--gold)"><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#FFFDF8;padding:8px"><span style="font-size:22px">🕊️</span><div class="nm" style="font-size:.95rem;margin-top:4px">"Your Presence Is Our Greatest Blessing"</div></div>
+  <canvas id="cv" width="260" height="120" style="position:absolute;inset:0;touch-action:none"></canvas></div>
+  <button id="cs" type="button" style="background:none;border:0;font:700 .7rem 'Cinzel',serif;letter-spacing:.15em;text-transform:uppercase;color:var(--ox);text-decoration:underline;cursor:pointer">Close</button></div></div>
+</div>`;
 }
-
-// ============================================================================
-// MOUNT FUNCTION (LIFECYCLE, COUNTDOWN & AUTO-PLAY ONCE CONTROLLER)
-// ============================================================================
 
 export function mount(root, { guest, wedding: w }) {
-  const screens = [...root.querySelectorAll('.screen-panel')];
-  const audioBtn = root.querySelector('#audioToggle');
-  const audio = root.querySelector('#royalAudio');
-
-  let activeIndex = 0;
-  let audioInitiated = false; // Audio play-once protection
-
-  function switchScreen(targetIndex) {
-    if (targetIndex === activeIndex || targetIndex < 0 || targetIndex >= screens.length) return;
-
-    const currentScreen = screens[activeIndex];
-    const targetScreen = screens[targetIndex];
-
-    currentScreen.classList.add('is-exiting');
-    currentScreen.classList.remove('is-active');
-
-    setTimeout(() => {
-      currentScreen.classList.remove('is-exiting');
-      targetScreen.classList.add('is-active');
-      activeIndex = targetIndex;
-    }, 400);
-  }
-
-  // 1. Navigation Button Handler (Triggers Audio strictly ONCE on user gesture)
-  root.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-next]');
-    if (btn) {
-      const target = parseInt(btn.getAttribute('data-next'), 10);
-      switchScreen(target);
-
-      if (audio && !audioInitiated) {
-        audioInitiated = true;
-        audio.currentTime = 0;
-        audio.play().then(() => {
-          if (audioBtn) audioBtn.classList.add('spinning');
-        }).catch((err) => {
-          console.log("Audio play policy notification:", err);
-        });
-      }
-    }
-  });
-
-  // 2. Audio Ends Listener (No Loop, Clean Stop)
-  if (audio) {
-    audio.addEventListener('ended', () => {
-      if (audioBtn) {
-        audioBtn.classList.remove('spinning');
-      }
-    });
-  }
-
-  // 3. Audio Manual Play / Pause
-  if (audioBtn && audio) {
-    audioBtn.onclick = () => {
-      if (audio.paused) {
-        audio.play().then(() => audioBtn.classList.add('spinning')).catch(() => {});
-      } else {
-        audio.pause();
-        audioBtn.classList.remove('spinning');
-      }
-    };
-  }
-
-  // 4. AUTOMATIC LIVE REAL-TIME COUNTDOWN TIMER (LAST SCREEN)
-  const cdElement = root.querySelector('#weddingCountdown');
-  if (cdElement) {
-    const targetDate = parseWeddingDateTime(w.date, w.time);
-
-    const elDays = root.querySelector('#cdDays');
-    const elHours = root.querySelector('#cdHours');
-    const elMins = root.querySelector('#cdMins');
-    const elSecs = root.querySelector('#cdSecs');
-
-    function updateCountdown() {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
-
-      if (distance <= 0) {
-        elDays.textContent = "00";
-        elHours.textContent = "00";
-        elMins.textContent = "00";
-        elSecs.textContent = "00";
-        return;
-      }
-
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-      elDays.textContent = String(days).padStart(2, '0');
-      elHours.textContent = String(hours).padStart(2, '0');
-      elMins.textContent = String(minutes).padStart(2, '0');
-      elSecs.textContent = String(seconds).padStart(2, '0');
-    }
-
-    updateCountdown();
-    const timerInterval = setInterval(updateCountdown, 1000);
-
-    const obs = new MutationObserver(() => {
-      if (!document.body.contains(root)) {
-        clearInterval(timerInterval);
-        obs.disconnect();
-      }
-    });
-    obs.observe(document.body, { childList: true, subtree: true });
-  }
-
-  // 5. Dynamic Google Calendar Link
-  const calBtn = root.querySelector('#saveCalBtn');
-  if (calBtn) {
-    const calTitle = encodeURIComponent(`Wedding: ${w.bride_name || 'Tarana'} & ${w.groom_name || 'Akbar'}`);
-    const calDesc = encodeURIComponent(`You are cordially invited to celebrate the marriage of ${w.bride_name || 'Tarana'} & ${w.groom_name || 'Akbar'}. Venue: ${w.venue || ''}, ${w.address || ''}`);
-    const calLoc = encodeURIComponent(`${w.venue || ''}, ${w.address || ''}`);
-
-    const startMs = parseWeddingDateTime(w.date, w.time);
-    const endMs = startMs + (2.5 * 60 * 60 * 1000); // 2.5-hour default duration
-    const toUtcStamp = (ms) => new Date(ms).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    const startUTC = toUtcStamp(startMs);
-    const endUTC = toUtcStamp(endMs);
-
-    calBtn.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${calTitle}&dates=${startUTC}/${endUTC}&details=${calDesc}&location=${calLoc}`;
-  }
-
-  // 6. Dynamic WhatsApp RSVP Link
-  const rsvpBtn = root.querySelector('#waRsvpBtn');
-  if (rsvpBtn) {
-    const rsvpPhone = esc(w.rsvp_number || '919330981386');
-    const msg = encodeURIComponent(`Aadab / Namaste, I will be attending the wedding of ${w.bride_name || 'Tarana'} & ${w.groom_name || 'Akbar'}! Guest: ${guest.name || 'Guest'}`);
-    rsvpBtn.href = `https://wa.me/${rsvpPhone}?text=${msg}`;
-  }
-
-  // 7. Scratch Card Trigger
-  const modal = root.querySelector('#scratchModal');
-  const openScratch = root.querySelector('#triggerScratch');
-  const closeScratch = root.querySelector('#closeScratch');
-  const canvas = root.querySelector('#scratchCanvas');
-
-  if (openScratch && modal && canvas) {
-    openScratch.onclick = () => {
-      modal.classList.add('is-open');
-      initScratch(canvas);
-    };
-    closeScratch.onclick = () => modal.classList.remove('is-open');
-  }
+  const $ = s => root.querySelector(s), S = [...root.querySelectorAll('.sp')], au = $('#au'), ab = $('#aud');
+  let cur = 0, played = false;
+  const go = n => { if (n === cur || !S[n]) return; const a = S[cur], b = S[n]; a.classList.add('out'); a.classList.remove('on'); cur = n;
+    setTimeout(() => { a.classList.remove('out'); b.classList.add('on'); }, 350); };
+  root.addEventListener('click', e => { const b = e.target.closest('[data-next]'); if (!b) return; go(+b.dataset.next);
+    if (au && !played) { played = true; au.play().then(() => ab.classList.add('spin')).catch(() => {}); } });
+  if (au) { au.addEventListener('ended', () => ab.classList.remove('spin'));
+    ab.onclick = () => au.paused ? au.play().then(() => ab.classList.add('spin')).catch(() => {}) : (au.pause(), ab.classList.remove('spin')); }
+  const t = parseWhen(w.date, w.time), E = ['d','h','m','s'].map(i => $('#' + i)), pad = n => String(n).padStart(2, '0');
+  const tick = () => { let ms = Math.max(0, t - Date.now()); const v = [Math.floor(ms / 864e5), Math.floor(ms % 864e5 / 36e5), Math.floor(ms % 36e5 / 6e4), Math.floor(ms % 6e4 / 1e3)]; E.forEach((el, i) => el && (el.textContent = pad(v[i]))); };
+  tick(); const iv = setInterval(() => root.isConnected ? tick() : clearInterval(iv), 1000);
+  const cal = $('#cal'); if (cal) { const loc = `${w.venue || ''}, ${w.address || ''}`, st = ms => new Date(ms).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    cal.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Wedding: ${w.bride_name} & ${w.groom_name}`)}&dates=${st(t)}/${st(t + 9e6)}&location=${encodeURIComponent(loc)}&details=${encodeURIComponent('You are cordially invited to the wedding of ' + w.bride_name + ' & ' + w.groom_name)}`; }
+  const wa = $('#wa'); if (wa) wa.href = `https://wa.me/${String(w.rsvp_number || '').replace(/\D/g, '')}?text=${encodeURIComponent(`Aadab / Namaste, I will be attending the wedding of ${w.bride_name} & ${w.groom_name}. Guest: ${guest?.name || ''}`)}`;
+  const sm = $('#sm'), cv = $('#cv'); $('#sc').onclick = () => { sm.classList.add('on'); scratch(cv); }; $('#cs').onclick = () => sm.classList.remove('on');
 }
-
-function initScratch(canvas) {
-  if (canvas._init) return;
-  canvas._init = true;
-
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
-
-  const grad = ctx.createLinearGradient(0, 0, w, h);
-  grad.addColorStop(0, '#ECC880');
-  grad.addColorStop(0.35, '#C59B27');
-  grad.addColorStop(0.7, '#8E6E1D');
-  grad.addColorStop(1, '#ECC880');
-
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, w, h);
-
-  ctx.fillStyle = '#42050e';
-  ctx.font = 'bold 11px Cinzel, serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('⚜ SCRATCH TO REVEAL ⚜', w / 2, h / 2 + 4);
-
-  let isDrawing = false;
-  function scratch(e) {
-    if (!isDrawing) return;
-    const r = canvas.getBoundingClientRect();
-    const cx = e.touches ? e.touches[0].clientX : e.clientX;
-    const cy = e.touches ? e.touches[0].clientY : e.clientY;
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.arc(cx - r.left, cy - r.top, 15, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  canvas.addEventListener('mousedown', () => { isDrawing = true; });
-  window.addEventListener('mouseup', () => { isDrawing = false; });
-  canvas.addEventListener('mousemove', scratch);
-  canvas.addEventListener('touchstart', () => { isDrawing = true; }, { passive: true });
-  window.addEventListener('touchend', () => { isDrawing = false; });
-  canvas.addEventListener('touchmove', scratch, { passive: true });
+function scratch(c) {
+  if (c._i) return; c._i = 1; const x = c.getContext('2d'), g = x.createLinearGradient(0, 0, c.width, c.height);
+  [[0,'#ECC880'],[.35,'#C59B27'],[.7,'#8E6E1D'],[1,'#ECC880']].forEach(([o, k]) => g.addColorStop(o, k));
+  x.fillStyle = g; x.fillRect(0, 0, c.width, c.height); x.fillStyle = '#42050e'; x.font = 'bold 12px Cinzel,serif'; x.textAlign = 'center'; x.fillText('⚜ SCRATCH TO REVEAL ⚜', c.width / 2, c.height / 2 + 4);
+  let d = 0; const mv = e => { if (!d) return; const r = c.getBoundingClientRect(), p = e.touches ? e.touches[0] : e; x.globalCompositeOperation = 'destination-out'; x.beginPath(); x.arc(p.clientX - r.left, p.clientY - r.top, 16, 0, 7); x.fill(); };
+  c.onmousedown = c.ontouchstart = () => d = 1; addEventListener('mouseup', () => d = 0); addEventListener('touchend', () => d = 0); c.onmousemove = mv; c.addEventListener('touchmove', mv, {passive: true});
 }
