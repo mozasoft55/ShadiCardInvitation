@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#32030B">
   <title>Royal Wedding Invitation</title>
 
-  <!-- High-End Typography Preconnect -->
+  <!-- Typography Preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
 
   <style>
     /* Absolute Viewport Lock: Zero Scroll / Zero Bounce */
@@ -83,7 +83,7 @@
   <main id="app-mount"></main>
 
   <script type="module">
-    // REPLACE WITH YOUR PUBLISHED APPS SCRIPT WEB APP URL:
+    // LIVE DEPLOYED APPS SCRIPT WEB APP URL
     const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbwWI7CL6CND0wZNglUWGUeo8Z7acqDelEGZBn15W07bSSTNhTlsQJ-pBMjDMPCaZYU9/exec";
 
     async function bootstrap() {
@@ -103,7 +103,7 @@
         if (cached) weddingPayload = JSON.parse(cached);
       } catch (e) {}
 
-      // Network request with non-blocking fallback
+      // Fast Network Fetch with Non-blocking Fallback
       try {
         const fetchPromise = fetch(`${API_ENDPOINT}?action=wedding&slug=${encodeURIComponent(slug)}`)
           .then(r => r.json())
@@ -118,7 +118,7 @@
         if (!weddingPayload) {
           weddingPayload = await fetchPromise;
         } else {
-          fetchPromise.catch(() => {}); // background refresh
+          fetchPromise.catch(() => {});
         }
       } catch (err) {
         if (!weddingPayload) {
@@ -133,7 +133,7 @@
 
       // Dynamically load template-02
       const tId = weddingPayload.wedding.template_id || 'template-02';
-      const module = await import(`./templates/${tId}.js?v=200x`);
+      const module = await import(`./templates/${tId}.js?v=201x`);
       
       const mount = document.getElementById('app-mount');
       mount.innerHTML = module.default({
