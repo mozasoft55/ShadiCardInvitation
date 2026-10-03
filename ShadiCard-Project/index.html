@@ -86,16 +86,32 @@
     // LIVE DEPLOYED APPS SCRIPT WEB APP URL
     const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbwWI7CL6CND0wZNglUWGUeo8Z7acqDelEGZBn15W07bSSTNhTlsQJ-pBMjDMPCaZYU9/exec";
 
+    // Helper: Title-case guest name (e.g. "md shamim khan" -> "Md Shamim Khan")
+    function formatGuestName(str) {
+      if (!str || !str.trim()) return "Respected Guest";
+      return str.trim().split(/\s+/).map(word => {
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      }).join(' ');
+    }
+
     async function bootstrap() {
       const p = new URLSearchParams(window.location.search);
-      const slug = p.get('w') || 'tarana-akbar-w0001';
+      
+      // Clean and sanitize incoming params
+      let rawSlug = (p.get('w') || 'tarana-akbar-w0001').trim();
+      if (rawSlug.endsWith('/')) rawSlug = rawSlug.slice(0, -1);
+
+      const rawGuest = p.get('g');
+      const rawPerson = parseInt(p.get('p') || '1', 10);
+      const isFamilyFlag = p.get('f') === '1';
+
       const guest = {
-        name: p.get('g') || 'Respected Guest',
-        persons: parseInt(p.get('p') || '1', 10),
-        with_family: p.get('f') === '1'
+        name: rawGuest ? formatGuestName(rawGuest.replace(/\+/g, ' ')) : 'Respected Guest',
+        persons: isNaN(rawPerson) || rawPerson < 1 ? 1 : rawPerson,
+        with_family: isFamilyFlag
       };
 
-      const cacheKey = `royal_cache_${slug}`;
+      const cacheKey = `royal_cache_${rawSlug}`;
       let weddingPayload = null;
 
       try {
@@ -105,7 +121,7 @@
 
       // Fast Network Fetch with Non-blocking Fallback
       try {
-        const fetchPromise = fetch(`${API_ENDPOINT}?action=wedding&slug=${encodeURIComponent(slug)}`)
+        const fetchPromise = fetch(`${API_ENDPOINT}?action=wedding&slug=${encodeURIComponent(rawSlug)}`)
           .then(r => r.json())
           .then(data => {
             if (data.success) {
@@ -131,9 +147,9 @@
         }
       }
 
-      // Dynamically load template-02
+      // Dynamically load template
       const tId = weddingPayload.wedding.template_id || 'template-02';
-      const module = await import(`./templates/${tId}.js?v=201x`);
+      const module = await import(`./templates/${tId}.js?v=205x`);
       
       const mount = document.getElementById('app-mount');
       mount.innerHTML = module.default({
