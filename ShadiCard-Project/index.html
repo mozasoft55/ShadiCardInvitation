@@ -45,7 +45,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s;
     }
 
     .loader-ring {
@@ -86,30 +86,48 @@
     // LIVE DEPLOYED APPS SCRIPT WEB APP URL
     const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbwWI7CL6CND0wZNglUWGUeo8Z7acqDelEGZBn15W07bSSTNhTlsQJ-pBMjDMPCaZYU9/exec";
 
-    // Helper: Title-case guest name (e.g. "md shamim khan" -> "Md Shamim Khan")
-    function formatGuestName(str) {
-      if (!str || !str.trim()) return "Respected Guest";
-      return str.trim().split(/\s+/).map(word => {
-        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-      }).join(' ');
+    function removeLoader() {
+      const loader = document.getElementById('luxury-loader');
+      if (loader) {
+        loader.style.opacity = '0';
+        setTimeout(() => loader.remove(), 500);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // GLOBAL GUEST DATA NORMALIZER (WORKS GLOBALLY FOR ALL TEMPLATES)
+    // -------------------------------------------------------------
+    function normalizeGuestData(searchParams) {
+      const rawGuest = searchParams.get('g');
+      const rawPerson = parseInt(searchParams.get('p') || '1', 10);
+      const isFamilyFlag = searchParams.get('f') === '1';
+
+      // Title-casing (e.g. "md shamim khan" -> "Md Shamim Khan")
+      const guestName = rawGuest
+        ? rawGuest.replace(/\+/g, ' ').trim().split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
+        : 'Respected Guest';
+
+      const validPersons = isNaN(rawPerson) || rawPerson < 1 ? 1 : rawPerson;
+
+      return {
+        name: guestName,
+        with_family: isFamilyFlag,
+        persons: validPersons,
+        // Global Pre-calculated Display Properties:
+        person_display: isFamilyFlag ? '—' : String(validPersons),
+        family_display: isFamilyFlag ? '✓' : '✕'
+      };
     }
 
     async function bootstrap() {
       const p = new URLSearchParams(window.location.search);
-      
-      // Clean and sanitize incoming params
+
+      // Clean Slug
       let rawSlug = (p.get('w') || 'tarana-akbar-w0001').trim();
       if (rawSlug.endsWith('/')) rawSlug = rawSlug.slice(0, -1);
 
-      const rawGuest = p.get('g');
-      const rawPerson = parseInt(p.get('p') || '1', 10);
-      const isFamilyFlag = p.get('f') === '1';
-
-      const guest = {
-        name: rawGuest ? formatGuestName(rawGuest.replace(/\+/g, ' ')) : 'Respected Guest',
-        persons: isNaN(rawPerson) || rawPerson < 1 ? 1 : rawPerson,
-        with_family: isFamilyFlag
-      };
+      // Global Normalized Guest
+      const guest = normalizeGuestData(p);
 
       const cacheKey = `royal_cache_${rawSlug}`;
       let weddingPayload = null;
@@ -119,7 +137,7 @@
         if (cached) weddingPayload = JSON.parse(cached);
       } catch (e) {}
 
-      // Fast Network Fetch with Non-blocking Fallback
+      // 1. Fetch Backend Data
       try {
         const fetchPromise = fetch(`${API_ENDPOINT}?action=wedding&slug=${encodeURIComponent(rawSlug)}`)
           .then(r => r.json())
@@ -137,35 +155,56 @@
           fetchPromise.catch(() => {});
         }
       } catch (err) {
+        console.error("Backend fetch error:", err);
         if (!weddingPayload) {
-          document.getElementById('luxury-loader').innerHTML = `
-            <div style="font-family:'Cinzel',serif; color:#ECC880; text-align:center; padding:20px;">
-              <p style="font-size:14px; letter-spacing:2px;">ROYAL ARCHIVE TEMPORARILY UNREACHABLE</p>
-              <small style="font-family:'Cormorant Garamond'; color:#d4af37;">Please check network connection</small>
-            </div>`;
-          return;
+          weddingPayload = {
+            wedding: {
+              bride_name: 'Tarana',
+              groom_name: 'Akbar',
+              template_id: 'template-02',
+              date: '2026-10-27',
+              time: '09:30 PM'
+            },
+            events: []
+          };
         }
       }
 
-      // Dynamically load template
-      const tId = weddingPayload.wedding.template_id || 'template-02';
-      const module = await import(`./templates/${tId}.js?v=205x`);
-      
-      const mount = document.getElementById('app-mount');
-      mount.innerHTML = module.default({
-        guest,
-        wedding: weddingPayload.wedding,
-        events: weddingPayload.events
-      });
+      // 2. Load & Render Template Dynamically
+      try {
+        const tId = weddingPayload.wedding?.template_id || 'template-02';
+        const module = await import(`./templates/${tId}.js?ts=${Date.now()}`);
 
-      if (typeof module.mount === 'function') {
-        module.mount(mount, { guest, wedding: weddingPayload.wedding, events: weddingPayload.events });
+        const mount = document.getElementById('app-mount');
+        mount.innerHTML = module.default({
+          guest,
+          wedding: weddingPayload.wedding,
+          events: weddingPayload.events || []
+        });
+
+        if (typeof module.mount === 'function') {
+          module.mount(mount, {
+            guest,
+            wedding: weddingPayload.wedding,
+            events: weddingPayload.events || []
+          });
+        }
+      } catch (importErr) {
+        console.error("Template rendering error:", importErr);
+        document.getElementById('luxury-loader').innerHTML = `
+          <div style="font-family:'Cinzel',serif; color:#ECC880; text-align:center; padding:20px;">
+            <p style="font-size:14px; letter-spacing:2px;">UNABLE TO INITIALIZE SUITE</p>
+            <small style="font-family:'Cormorant Garamond'; color:#d4af37; font-size:13px;">${importErr.message}</small>
+          </div>`;
+        return;
       }
 
-      const loader = document.getElementById('luxury-loader');
-      loader.style.opacity = '0';
-      setTimeout(() => loader.remove(), 600);
+      // 3. Dismiss Loader
+      removeLoader();
     }
+
+    // Safety fallback: Loader 5 seconds se zyada freeze nahi hoga
+    setTimeout(removeLoader, 5000);
 
     window.addEventListener('DOMContentLoaded', bootstrap);
   </script>
