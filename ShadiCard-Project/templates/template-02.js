@@ -15,7 +15,6 @@ const THEMES = {
   navy:    {primary:'#1b2f5e', primary_dark:'#0a1633', accent:'#b98a2f', paper_top:'#FCFDFF', paper_bottom:'#E3E8F2', text:'#16203a'},
 
   rose:    {primary:'#9c2f55', primary_dark:'#55132d', accent:'#b98a2f', paper_top:'#FFFBFC', paper_bottom:'#F5DDE3', text:'#3a1824'}
-
 };
 
 const MON = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
@@ -326,7 +325,6 @@ export function mount(root, { guest, wedding: w }) {
   const wa = $('#wa'); if (wa) wa.href = `https://wa.me/${String(w.rsvp_number || '').replace(/\D/g, '')}?text=${encodeURIComponent(`Aadab / Namaste, I will be attending the wedding of ${w.bride_name} & ${w.groom_name}. Guest: ${guest?.name || ''}`)}`;
 
   const sm = $('#sm'), cv = $('#cv'); $('#sc').onclick = () => { sm.classList.add('on'); scratch(cv); }; $('#cs').onclick = () => sm.classList.remove('on');
-
 }
 
 function scratch(c) {
@@ -338,7 +336,6 @@ function scratch(c) {
   x.fillStyle = g; x.fillRect(0, 0, c.width, c.height); x.fillStyle = '#42050e'; x.font = 'bold 12px Cinzel,serif'; x.textAlign = 'center'; x.fillText('⚜ SCRATCH TO REVEAL ⚜', c.width / 2, c.height / 2 + 4);
 
   let d = 0; const mv = e => { if (!d) return; const r = c.getBoundingClientRect(), p = e.touches ? e.touches[0] : e; x.globalCompositeOperation = 'destination-out'; x.beginPath(); x.arc(p.clientX - r.left, p.clientY - r.top, 16, 0, 7); x.fill(); };
-
   c.onmousedown = c.ontouchstart = () => d = 1; addEventListener('mouseup', () => d = 0); addEventListener('touchend', () => d = 0); c.onmousemove = mv; c.addEventListener('touchmove', mv, {passive: true});
 
 } 
