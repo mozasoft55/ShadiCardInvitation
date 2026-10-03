@@ -55,7 +55,13 @@ export default function render({ guest, wedding: w, events = [] }) {
   const rawB = String(w.bride_name || 'Bride').trim(), rawG = String(w.groom_name || 'Groom').trim();
   const bride = esc(rawB), groom = esc(rawG), ini = (rawB[0] + rawG[0]).toUpperCase();
   const brideFull = esc(w.bride_full || rawB), groomFull = esc(w.groom_full || rawG);
-  const gName = esc(guest?.name || 'Respected Guest'), persons = esc(guest?.persons || 1), fam = guest?.with_family ? '✓' : '—';
+  const gName = esc(guest?.name || 'Respected Guest');
+
+  // Person vs Family Mutual Exclusive Logic
+  const isFamilyFlag = Boolean(guest?.with_family);
+  const fam = isFamilyFlag ? '✓' : '✕';
+  const persons = isFamilyFlag ? '—' : esc(guest?.persons || 1);
+
   const th = (w.theme_colors && typeof w.theme_colors === 'object') ? {...THEMES.maroon, ...w.theme_colors} : (THEMES[String(w.theme || '').toLowerCase()] || THEMES.maroon);
   const sd = saveTheDate(w.date), contacts = lines(w.rsvp_contacts), map = safeUrl(w.map_url);
   const names = `<span class="sc" style="font-size:1.9em;white-space:nowrap">${bride}<span class="amp"> &amp; </span>${groom}</span>`;
@@ -119,8 +125,8 @@ ${P(1, `<div>${crest(ini, 4.6)}<div class="cap" style="font-size:1.1em;margin-to
   <div class="to"><span class="sc">To</span><span class="sc g">${gName}</span></div>
   <div class="mf"><svg class="spark" viewBox="0 0 24 24"><use href="#sp"/></svg><div><div class="sc">Person</div><div class="box">${persons}</div></div><i class="d"></i><div><div class="sc">Family</div><div class="box">${fam}</div></div><svg class="spark" viewBox="0 0 24 24"><use href="#sp"/></svg></div>
   <div><div class="it" style="font-size:1.05em">A Cordial Invitation</div><div class="nm" style="font-size:1.55em">${esc(w.host_name || '')}</div>
-   <div class="tx" style="font-size:1.02em">${esc(w.host_address || w.address || '')}</div>${contacts.map(c => `<div class="tx" style="font-weight:600;font-size:1.02em">${esc(c)}</div>`).join('')}</div>`, next(2, 'The Ceremony'))}
-${P(2, `<div><div class="it tx" style="font-size:1.02em;max-width:85%;margin:0 auto">${esc(w.invocation || 'In the name of Allah the most beneficent & merciful')}</div>${fl(10)}<div class="cap" style="font-size:1.25em">${esc(w.ceremony_title || 'Marriage Ceremony')}</div></div>
+   <div class="tx" style="font-size:1.02em">${esc(w.host_address \vert{}\vert{} w.address \vert{}\vert{} '')}</div>${contacts.map(c => `<div class="tx" style="font-weight:600;font-size:1.02em">${esc(c)}</div>`).join('')}</div>`, next(2, 'The Ceremony'))}
+${P(2, `<div><div class="it tx" style="font-size:1.02em;max-width:85%;margin:0 auto">${esc(w.invocation \vert{}\vert{} 'In the name of Allah the most beneficent & merciful')}</div>${fl(10)}<div class="cap" style="font-size:1.25em">${esc(w.ceremony_title || 'Marriage Ceremony')}</div></div>
   <div><div class="it tx" style="font-size:1.05em">has great pleasure to invite you to attend the wedding of their daughter</div>
    <div class="nm" style="font-size:1.95em;margin-top:.2em">${brideFull}</div><small>${esc(w.bride_parents || '')}</small>
    <div class="sc" style="font-size:2.6em">Weds</div>
@@ -158,7 +164,7 @@ export function mount(root, { guest, wedding: w }) {
   const tick = () => { let ms = Math.max(0, t - Date.now()); const v = [Math.floor(ms / 864e5), Math.floor(ms % 864e5 / 36e5), Math.floor(ms % 36e5 / 6e4), Math.floor(ms % 6e4 / 1e3)]; E.forEach((el, i) => el && (el.textContent = pad(v[i]))); };
   tick(); const iv = setInterval(() => root.isConnected ? tick() : clearInterval(iv), 1000);
   const cal = $('#cal'); if (cal) { const loc = `${w.venue || ''}, ${w.address || ''}`, st = ms => new Date(ms).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    cal.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Wedding: ${w.bride_name} & ${w.groom_name}`)}&dates=${st(t)}/${st(t + 9e6)}&location=${encodeURIComponent(loc)}&details=${encodeURIComponent('You are cordially invited to the wedding of ' + w.bride_name + ' & ' + w.groom_name)}`; }
+    cal.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Wedding: ${w.bride_name} &${w.groom_name}`)}&dates=${st(t)}/${st(t + 9e6)}&location=${encodeURIComponent(loc)}&details=${encodeURIComponent('You are cordially invited to the wedding of ' + w.bride_name + ' & ' + w.groom_name)}`; }
   const wa = $('#wa'); if (wa) wa.href = `https://wa.me/${String(w.rsvp_number || '').replace(/\D/g, '')}?text=${encodeURIComponent(`Aadab / Namaste, I will be attending the wedding of ${w.bride_name} & ${w.groom_name}. Guest: ${guest?.name || ''}`)}`;
   const sm = $('#sm'), cv = $('#cv'); $('#sc').onclick = () => { sm.classList.add('on'); scratch(cv); }; $('#cs').onclick = () => sm.classList.remove('on');
 }
