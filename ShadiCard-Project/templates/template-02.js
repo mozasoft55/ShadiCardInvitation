@@ -112,7 +112,10 @@ export default function render({ guest, wedding: w, events = [] }) {
 
   const brideFull = esc(w.bride_full || rawB), groomFull = esc(w.groom_full || rawG);
 
-  const gName = esc(guest?.name || 'Respected Guest'), persons = esc(guest?.persons || 1), fam = guest?.with_family ? '✓' : '—';
+  const gName = esc(guest?.name || 'Respected Guest');
+const isFam = Boolean(guest?.with_family);
+const fam = isFam ? '✓' : '✕';
+const persons = isFam ? '—' : esc(guest?.persons || 1);
 
   const th = (w.theme_colors && typeof w.theme_colors === 'object') ? {...THEMES.maroon, ...w.theme_colors} : (THEMES[String(w.theme || '').toLowerCase()] || THEMES.maroon);
 
